@@ -1,0 +1,294 @@
+<article class="post">
+    <button id="hamburger">
+        ☰
+    </button>
+    <div id="sidebar-category" class="sidebar-item sidebar-category">
+        <div class="sidebar-nav sidebar-pages">
+            <ul class="nav">
+            <li class="nav-title">Pages</li>
+            <li class="nav-list">
+                <a class="nav-item" href="/">Articles</a>
+            </li>
+            {% assign pages_list = site.pages %}
+            {% for node in pages_list %}
+                {% if node.title != null %}
+                {% if node.layout == "page" %}
+                    <li class="nav-list">
+                        <a class="nav-item" href="{{ node.url }}">
+                            {{ node.title }}
+                        </a>
+                    </li>
+                {% endif %}
+                {% endif %}
+            {% endfor %}
+            </ul>
+        </div>
+    
+        <div class="sidebar-nav">
+            <ul class="nav">
+                <li class="nav-title">Categories
+                </li>
+                <div id="categories-list">
+                    {% assign hide_categories = "daily,programmers,project,go,error,infra,etc" | split: "," %}
+                    {% for category in site.categories reversed %}
+                        {% assign catname = category | first | strip %}
+                        {% assign hide = false %}
+                        {% for hide_cat in hide_categories %}
+                            {% if catname == hide_cat %}
+                                {% assign hide = true %}
+                                {% break %}
+                            {% endif %}
+                        {% endfor %}
+                        {% unless hide %}
+                            <li class="nav-list">
+                                <a class="nav-item" href="{{ root_url }}/{{ site.category_dir }}#{{ category | first }}">
+                                <span class="name">{{ category | first }} 트렌드</span>
+                                <span class="badge">{{ category | last | size }}</span>
+                                </a>
+                            </li>
+                        {% endunless %}
+                    {% endfor %}
+                </div>
+            </ul>
+        </div>
+    </div>
+
+    <header class="post-header home">
+        <div class="post-title">Category - <span id='category-name'></span></div>
+    </header>
+
+    <div class="post-content">
+        {%- if site.posts.size > 0 -%}
+        <ul class="post-list" id="post-list">
+            {%- for post in site.posts -%}
+              <li class="post-list-item post-category-{{post.categories}}">
+                <a class="post-link-card" href="{{ post.url | relative_url }}">
+                  <div class="post-thumb-wrap">
+                    {% if post.content contains '<img' %}
+                      {% assign first_img_tag = post.content | split: '<img' | slice: 1, 1 | first | split: '>' | first %}
+                      {% assign src = first_img_tag | split: 'src="' | last | split: '"' | first %}
+                      <img src="{{ src }}" class="post-thumb" alt="{{ post.title }}" loading="lazy" width="130" height="130">
+                    {% else %}
+                      <img src="https://user-gen-media-assets.s3.amazonaws.com/seedream_images/c6279364-1598-4417-a1ab-92923b3d5e77.png" class="post-thumb" alt="{{ post.title }}" loading="lazy" width="130" height="130">
+                    {% endif %}
+                  </div>
+                  <div class="post-info">
+                    <div class="post-info-title">{{ post.title | escape }}</div>
+                    <div class="post-info-date">{{ post.date | date: "%Y/%m/%d" }}</div>
+                    {% if site.show_excerpts %}
+                      <div class="post-excerpt">{{ post.excerpt }}</div>
+                    {% endif %}
+                  </div>
+                </a>
+              </li>
+              {% if forloop.index == 10 %}
+                <li class="post-list-ad">
+                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
+                        crossorigin="anonymous"></script>
+                    <ins class="adsbygoogle"
+                        style="display:block"
+                        data-ad-format="fluid"
+                        data-ad-layout-key="-gh+i-2-mo+19k"
+                        data-ad-client="ca-pub-8794269458658143"
+                        data-ad-slot="5127310963"></ins>
+                    <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </li>
+            {% endif %}
+            {%- endfor -%}
+            <li class="post-list-ad">
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
+                    crossorigin="anonymous"></script>
+                <ins class="adsbygoogle"
+                    style="display:block"
+                    data-ad-format="fluid"
+                    data-ad-layout-key="-gh+i-2-mo+19k"
+                    data-ad-client="ca-pub-8794269458658143"
+                    data-ad-slot="5127310963"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </li>
+        </ul>
+          
+
+        <nav class="pagination" id="pagination" style="display: none;" aria-label="Page navigation">
+            <a href="#" class="pagination-btn pagination-prev disabled" id="prev-btn" aria-disabled="true" tabindex="-1">← 이전</a>
+            <div class="pagination-numbers" id="page-numbers"></div>
+            <a href="#" class="pagination-btn pagination-next" id="next-btn">다음 →</a>
+        </nav>
+
+        {%- endif -%}
+    </div>
+</article>
+
+<script src="/public/js/jquery-3.4.1.slim.min.js"></script>
+<script>
+    // 리스트 최대 개수 변경
+    const postsPerPage = 20;
+    let currentPage = 1;
+    let filteredPosts = [];
+
+    function updatePagination() {
+        const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+        const $pagination = $('#pagination');
+        const $prevBtn = $('#prev-btn');
+        const $nextBtn = $('#next-btn');
+        const $pageNumbers = $('#page-numbers');
+
+        if (totalPages <= 1) {
+            $pagination.hide();
+            return;
+        }
+        $pagination.show();
+
+        // 이전 버튼 disabled 설정 및 tabindex
+        if (currentPage === 1) {
+            $prevBtn.addClass('disabled').attr('aria-disabled', 'true').attr('tabindex', '-1').off('click').removeAttr('href');
+        } else {
+            $prevBtn.removeClass('disabled').attr('aria-disabled', 'false').removeAttr('tabindex');
+            $prevBtn.attr('href', '#').off('click').on('click', (e) => {
+                e.preventDefault();
+                currentPage--;
+                showCurrentPage();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        // 다음 버튼 disabled 설정 및 tabindex
+        if (currentPage === totalPages) {
+            $nextBtn.addClass('disabled').attr('aria-disabled', 'true').attr('tabindex', '-1').off('click').removeAttr('href');
+        } else {
+            $nextBtn.removeClass('disabled').attr('aria-disabled', 'false').removeAttr('tabindex');
+            $nextBtn.attr('href', '#').off('click').on('click', (e) => {
+                e.preventDefault();
+                currentPage++;
+                showCurrentPage();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        // 페이지 번호 생성 (축약형)
+        $pageNumbers.empty();
+
+        // 첫 페이지
+        if (currentPage === 1) {
+            $pageNumbers.append('<span class="pagination-number current">1</span>');
+        } else {
+            $pageNumbers.append('<a href="#" class="pagination-number" data-page="1">1</a>');
+        }
+
+        // ... (생략 표시) - 왼쪽
+        if (currentPage > 3) {
+            $pageNumbers.append('<span class="pagination-ellipsis">...</span>');
+        }
+
+        // 현재 페이지 주변 (현재-1, 현재, 현재+1)
+        for (let i = 2; i < totalPages; i++) {
+            const diff = Math.abs(i - currentPage);
+            if (diff <= 1) {
+                if (i === currentPage) {
+                    $pageNumbers.append(`<span class="pagination-number current">${i}</span>`);
+                } else {
+                    $pageNumbers.append(`<a href="#" class="pagination-number" data-page="${i}">${i}</a>`);
+                }
+            }
+        }
+
+        // ... (생략 표시) - 오른쪽
+        if (currentPage < totalPages - 2) {
+            $pageNumbers.append('<span class="pagination-ellipsis">...</span>');
+        }
+
+        // 마지막 페이지
+        if (totalPages > 1) {
+            if (currentPage === totalPages) {
+                $pageNumbers.append(`<span class="pagination-number current">${totalPages}</span>`);
+            } else {
+                $pageNumbers.append(`<a href="#" class="pagination-number" data-page="${totalPages}">${totalPages}</a>`);
+            }
+        }
+
+        // 페이지 번호 클릭 이벤트
+        $('.pagination-number').off('click').on('click', function(e) {
+            e.preventDefault();
+            const page = $(this).data('page');
+            if (page) {
+                currentPage = page;
+                showCurrentPage();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    }
+
+    function showCurrentPage() {
+        filteredPosts.forEach(post => $(post).hide());
+        const start = (currentPage - 1) * postsPerPage;
+        const end = start + postsPerPage;
+        const postsToShow = filteredPosts.slice(start, end);
+        postsToShow.forEach(post => $(post).show());
+        updatePagination();
+    }
+
+    function filterAndPaginate() {
+        currentPage = 1;
+        if (window.location.hash) {
+            let hash = window.location.hash.substring(1);
+            $('#category-name').text(hash.charAt(0).toUpperCase() + hash.slice(1));
+
+            filteredPosts = $('.post-list-item').filter(function() {
+                return $(this).hasClass('post-category-' + hash);
+            }).toArray();
+            $('.post-list-item').hide();
+        } else {
+            $('#category-name').text('All');
+            filteredPosts = $('.post-list-item').toArray();
+        }
+        showCurrentPage();
+    }
+
+    // 페이지 로드 및 해시 변경 이벤트
+    $(document).ready(filterAndPaginate);
+    $(window).on('hashchange', filterAndPaginate);
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar-category');
+        const hamburger = document.getElementById('hamburger');
+        
+        // 햄버거 버튼 클릭 시 토글
+        hamburger.addEventListener('click', function(e) {
+          e.stopPropagation();  // 이벤트 버블링 방지
+          if (sidebar.style.display === 'none' || sidebar.style.display === '') {
+            sidebar.style.display = 'block';
+          } else {
+            sidebar.style.display = 'none';
+          }
+        });
+        
+        // 사이드바 내부 클릭 시 이벤트 버블링 방지 (사이드바 안에서 클릭해도 안 닫힘)
+        sidebar.addEventListener('click', function(e) {
+          e.stopPropagation();
+        });
+        
+        // 사이드바 안의 링크 클릭 시 사이드바 닫기
+        const sidebarLinks = sidebar.querySelectorAll('a');
+        sidebarLinks.forEach(function(link) {
+          link.addEventListener('click', function() {
+            sidebar.style.display = 'none';
+          });
+        });
+        
+        // 문서 전체 클릭 시 사이드바 닫기 (바깥쪽 클릭)
+        document.addEventListener('click', function(e) {
+          if (sidebar.style.display === 'block' && 
+              !sidebar.contains(e.target) && 
+              e.target !== hamburger) {
+            sidebar.style.display = 'none';
+          }
+        });
+      });
+      
+</script>

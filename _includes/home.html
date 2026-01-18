@@ -1,0 +1,234 @@
+<article class="post">
+
+    <button id="hamburger">
+        ☰
+    </button>
+    <div id="sidebar-category" class="sidebar-item sidebar-category">
+    <div class="sidebar-nav sidebar-pages">
+        <ul class="nav">
+        <li class="nav-title">Pages</li>
+        <li class="nav-list">
+            <a class="nav-item" href="/">Articles</a>
+        </li>
+        {% assign pages_list = site.pages %}
+        {% for node in pages_list %}
+            {% if node.title != null %}
+            {% if node.layout == "page" %}
+                <li class="nav-list">
+                    <a class="nav-item" href="{{ node.url }}">
+                        {{ node.title }}
+                    </a>
+                </li>
+            {% endif %}
+            {% endif %}
+        {% endfor %}
+        </ul>
+    </div>
+
+    <div class="sidebar-nav">
+        <ul class="nav">
+            <li class="nav-title">Categories
+            </li>
+            <div id="categories-list">
+                {% assign hide_categories = "daily,programmers,project,go,error,infra,etc" | split: "," %}
+                {% for category in site.categories reversed %}
+                    {% assign catname = category | first | strip %}
+                    {% assign hide = false %}
+                    {% for hide_cat in hide_categories %}
+                        {% if catname == hide_cat %}
+                            {% assign hide = true %}
+                            {% break %}
+                        {% endif %}
+                    {% endfor %}
+                    {% unless hide %}
+                        <li class="nav-list">
+                            <a class="nav-item" href="{{ root_url }}/{{ site.category_dir }}#{{ category | first }}">
+                            <span class="name">{{ category | first }} 트렌드</span>
+                            <span class="badge">{{ category | last | size }}</span>
+                            </a>
+                        </li>
+                    {% endunless %}
+                {% endfor %}
+            </div>
+        </ul>
+    </div>
+</div>
+
+  <header class="post-header home">
+    <div class="post-title">Articles</div>
+  </header>
+
+  <div class="post-content">
+    {%- if paginator.posts.size > 0 -%}
+    <ul class="post-list">
+      {%- for post in paginator.posts -%}
+      <li class="post-list-item post-category-{{post.categories}}">
+        <a class="post-link-card" href="{{ post.url | relative_url }}">
+          <div class="post-thumb-wrap">
+            {% if post.content contains '<img' %}
+              {% assign first_img_tag = post.content | split: '<img' | slice: 1, 1 | first | split: '>' | first %}
+              {% assign src = first_img_tag | split: 'src="' | last | split: '"' | first %}
+              <img src="{{ src }}" class="post-thumb" alt="{{ post.title }}" loading="lazy" width="130" height="130">
+            {% else %}
+              <img src="https://user-gen-media-assets.s3.amazonaws.com/seedream_images/c6279364-1598-4417-a1ab-92923b3d5e77.png" class="post-thumb" alt="{{ post.title }}" loading="lazy" width="130" height="130">
+            {% endif %}
+          </div>
+          <div class="post-info">
+            <div class="post-info-title">{{ post.title | escape }}</div>
+            <div class="post-info-date">{{ post.date | date: "%Y/%m/%d" }}</div>
+            {% if site.show_excerpts %}
+              <div class="post-excerpt">{{ post.excerpt }}</div>
+            {% endif %}
+          </div>
+        </a>
+      </li>
+      {% if forloop.index == 10 %}
+      <li class="post-list-ad">
+          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
+              crossorigin="anonymous"></script>
+          <ins class="adsbygoogle"
+              style="display:block"
+              data-ad-format="fluid"
+              data-ad-layout-key="-gh+i-2-mo+19k"
+              data-ad-client="ca-pub-8794269458658143"
+              data-ad-slot="5127310963"></ins>
+          <script>
+              (adsbygoogle = window.adsbygoogle || []).push({});
+          </script>
+      </li>
+      {% endif %}
+      {%- endfor -%}
+      <li class="post-list-ad">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
+            crossorigin="anonymous"></script>
+        <ins class="adsbygoogle"
+            style="display:block"
+            data-ad-format="fluid"
+            data-ad-layout-key="-gh+i-2-mo+19k"
+            data-ad-client="ca-pub-8794269458658143"
+            data-ad-slot="5127310963"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+      </li>
+    </ul>
+
+<!-- 페이지네이션 UI (숫자 버전 - 축약형) -->
+{%- if include.has_pagination and include.total_pages > 1 -%}
+<div class="pagination">
+  <!-- 이전 버튼 -->
+  {%- if include.previous_page -%}
+    <a href="{{ include.previous_page_path | relative_url }}" class="pagination-btn">
+      ← 이전
+    </a>
+  {%- else -%}
+    <span class="pagination-btn disabled">← 이전</span>
+  {%- endif -%}
+
+  <!-- 페이지 번호들 -->
+  <div class="pagination-numbers">
+    {%- assign current = include.current_page -%}
+    {%- assign total = include.total_pages -%}
+    
+    <!-- 첫 페이지 -->
+    {%- if current == 1 -%}
+      <span class="pagination-number current">1</span>
+    {%- else -%}
+      <a href="{{ '/' | relative_url }}" class="pagination-number">1</a>
+    {%- endif -%}
+    
+    <!-- ... (생략 표시) -->
+    {%- if current > 3 -%}
+      <span class="pagination-ellipsis">...</span>
+    {%- endif -%}
+    
+    <!-- 현재 페이지 주변 -->
+    {%- for page in (2..total) -%}
+      {%- assign diff = page | minus: current -%}
+      {%- if diff < 0 -%}
+        {%- assign diff = 0 | minus: diff -%}
+      {%- endif -%}
+      
+      {%- if page == total -%}
+        {%- continue -%}
+      {%- elsif diff <= 1 -%}
+        {%- if page == current -%}
+          <span class="pagination-number current">{{ page }}</span>
+        {%- else -%}
+          <a href="{{ site.paginate_path | relative_url | replace: ':num', page }}" class="pagination-number">{{ page }}</a>
+        {%- endif -%}
+      {%- endif -%}
+    {%- endfor -%}
+    
+    <!-- ... (생략 표시) -->
+    {%- if current < total | minus: 2 -%}
+      <span class="pagination-ellipsis">...</span>
+    {%- endif -%}
+    
+    <!-- 마지막 페이지 -->
+    {%- if total > 1 -%}
+      {%- if current == total -%}
+        <span class="pagination-number current">{{ total }}</span>
+      {%- else -%}
+        <a href="{{ site.paginate_path | relative_url | replace: ':num', total }}" class="pagination-number">{{ total }}</a>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+
+  <!-- 다음 버튼 -->
+  {%- if include.next_page -%}
+    <a href="{{ include.next_page_path | relative_url }}" class="pagination-btn">
+      다음 →
+    </a>
+  {%- else -%}
+    <span class="pagination-btn disabled">다음 →</span>
+  {%- endif -%}
+</div>
+{%- endif -%}
+
+    
+    {%- else -%}
+    <p>게시글이 없습니다.</p>
+    {%- endif -%}
+  </div>
+</article>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar-category');
+    const hamburger = document.getElementById('hamburger');
+    
+    // 햄버거 버튼 클릭 시 토글
+    hamburger.addEventListener('click', function(e) {
+      e.stopPropagation();  // 이벤트 버블링 방지
+      if (sidebar.style.display === 'none' || sidebar.style.display === '') {
+        sidebar.style.display = 'block';
+      } else {
+        sidebar.style.display = 'none';
+      }
+    });
+    
+    // 사이드바 내부 클릭 시 이벤트 버블링 방지 (사이드바 안에서 클릭해도 안 닫힘)
+    sidebar.addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+    
+    // 사이드바 안의 링크 클릭 시 사이드바 닫기
+    const sidebarLinks = sidebar.querySelectorAll('a');
+    sidebarLinks.forEach(function(link) {
+      link.addEventListener('click', function() {
+        sidebar.style.display = 'none';
+      });
+    });
+    
+    // 문서 전체 클릭 시 사이드바 닫기 (바깥쪽 클릭)
+    document.addEventListener('click', function(e) {
+      if (sidebar.style.display === 'block' && 
+          !sidebar.contains(e.target) && 
+          e.target !== hamburger) {
+        sidebar.style.display = 'none';
+      }
+    });
+  });
+   
+</script>

@@ -1,0 +1,190 @@
+<article class="post">
+  {% assign current_category = page.categories[0] %} {% assign posts_in_category
+  = site.categories[current_category] %} {% assign current_index = nil %} {% for
+  post in posts_in_category %} {% if post.url == page.url %} {% assign
+  current_index = forloop.index0 %} {% endif %} {% endfor %}
+
+  <header class="post-header">
+    {% if current_category %}
+    <div class="back-to-category">
+      <a href="/category/#{{ current_category | slugify }}"
+        >< 목록으로 돌아가기</a
+      >
+    </div>
+    {% endif %}
+    <div class="post-title">{{ page.title | escape }}</div>
+    <time
+      class="post-date dt-published"
+      datetime="{{ page.date | date_to_xmlschema }}"
+      itemprop="datePublished"
+    >
+      {%- assign date_format = site.date_forma | default: "%Y/%m/%d" -%} {{
+      page.date | date: date_format }}
+    </time>
+  </header>
+
+  <div class="post-content">
+    {{ content }} 
+    <auto-ads-exclusion-area>
+      <div class="post-ad top" style="min-height: 280px !important; padding-top: 80px;">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
+        crossorigin="anonymous"></script>
+        <ins class="adsbygoogle"
+          style="display:inline-block;"
+          data-ad-client="ca-pub-8794269458658143"
+          data-ad-slot="1179866678"
+          data-ad-format="auto"
+          data-full-width-responsive="true"></ins>
+        <script>
+          (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+      </div>
+    
+      {% assign url_string = "
+      /2025-12/2025/12/15/%EC%9D%B4%EB%A7%88%ED%8A%B8,_%EC%8B%A0%EC%84%B8%EA%B3%84%ED%91%B8%EB%93%9C_%EC%83%81%EC%9E%A5%ED%8F%90%EC%A7%80.html;
+      /2025-11/2025/11/26/%EC%97%B0%EB%A7%90%EC%A0%95%EC%82%B0_%EA%B8%B0%EA%B0%84.html;
+      /2025-12/2025/12/12/%EC%95%84%EB%85%B8%EC%8B%9C%EB%93%9C%EC%97%B0%EA%B3%A0.html;
+      /2025-12/2025/12/10/11%EC%9B%94_%EC%B7%A8%EC%97%85%EC%9E%90_22.5%EB%A7%8C_%EC%A6%9D%EA%B0%80.html;
+      /2025-4/2025/04/10/strobotron-에-대해서.html " | strip_newlines | replace: "
+      ", "" %} {% assign urls = url_string | split: ";" %} {% assign
+      selected_posts = "" | split: "" %} {% for url in urls %} {% assign
+      trimmed_url = url | strip %} {% for post in site.posts %} {% if post.url ==
+      trimmed_url %} {% assign selected_posts = selected_posts | push: post %} {%
+      break %} {% endif %} {% endfor %} {% endfor %}
+
+      <div class="recommand-contents">
+        <h2>최신 이슈 살펴보기</h2>
+        <div class="cards">
+          {% for post in selected_posts %}
+          <a class="card" href="{{ post.url }}">
+            <div class="thumb-wrap">
+              {% if post.content contains '<img' %} {% assign first_img_tag =
+              post.content | split: '<img' | slice: 1, 1 | first | split: '>' |
+              first %} {% assign src = first_img_tag | split: 'src="' | last |
+              split: '"' | first %}
+              <img
+                src="{{ src }}"
+                class="card-thumb"
+                alt="{{ post.title }}"
+                loading="lazy"
+                width="130"
+                height="130"
+              />
+              {% else %}
+              <img
+                src="https://user-gen-media-assets.s3.amazonaws.com/seedream_images/c6279364-1598-4417-a1ab-92923b3d5e77.png"
+                class="card-thumb"
+                alt="{{ post.title }}"
+                loading="lazy"
+                width="130"
+                height="130"
+              />
+              {% endif %}
+            </div>
+            <div class="card-info">
+              <div class="card-title">{{ post.title }}</div>
+              <div class="card-date">{{ post.date | date: "%Y-%m-%d" }}</div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </auto-ads-exclusion-area>
+  </div>
+
+  <footer>
+    {% if current_category %}
+    <div class="back-to-category">
+      <a href="/category/#{{ current_category | slugify }}"
+        >< 목록으로 돌아가기</a
+      >
+    </div>
+    {% endif %}
+
+    <div class="post-navigation">
+      {% if current_index != nil %} {% assign prev_index = current_index | plus:
+      1 %} {% assign next_index = current_index | minus: 1 %} {% if prev_index <
+      posts_in_category.size %}
+      <a class="prev-post" href="{{ posts_in_category[prev_index].url }}">
+        <span class="next-title"
+          >{{ posts_in_category[prev_index].title }}</span
+        >
+      </a>
+      {% else %}
+      <a class="prev-post"></a>
+      {% endif %} {% if next_index >= 0 %}
+      <a class="next-post" href="{{ posts_in_category[next_index].url }}">
+        <span class="next-title"
+          >{{ posts_in_category[next_index].title }}</span
+        >
+      </a>
+      {% else %}
+      <a class="next-post"></a>
+      {% endif %} {% endif %}
+    </div>
+
+    <div class="post-ad" style="min-height: 280px !important; padding-top: 80px;">
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
+      crossorigin="anonymous"></script>
+      <ins class="adsbygoogle"
+        style="display:inline-block;"
+        data-ad-client="ca-pub-8794269458658143"
+        data-ad-slot="1179866678"
+        data-ad-format="auto"
+        data-full-width-responsive="true"></ins>
+      <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+
+    <auto-ads-exclusion-area>
+      <div class="recent-posts">
+        <h2>최근 게시글</h2>
+        <div class="cards">
+          {% for post in site.posts limit:5 %}
+          <a class="card" href="{{ post.url }}">
+            <div class="thumb-wrap">
+              {% if post.content contains '<img' %} {% assign first_img_tag =
+              post.content | split: '<img' | slice: 1, 1 | first | split: '>' |
+              first %} {% assign src = first_img_tag | split: 'src="' | last |
+              split: '"' | first %}
+              <img
+                src="{{ src }}"
+                class="card-thumb"
+                alt=" {{ post.title }}"
+                loading="lazy"
+                width="130"
+                height="130"
+              />
+              {% else %}
+              <img
+                src="https://user-gen-media-assets.s3.amazonaws.com/seedream_images/c6279364-1598-4417-a1ab-92923b3d5e77.png"
+                class="card-thumb"
+                alt="{{ post.title }}"
+                loading="lazy"
+                width="130"
+                height="130"
+              />
+              {% endif %}
+            </div>
+            <div class="card-info">
+              <div class="card-title">{{ post.title }}</div>
+              <div class="card-date">{{ post.date | date: "%Y-%m-%d" }}</div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </auto-ads-exclusion-area>
+  </footer>
+
+  <script
+    src="https://utteranc.es/client.js"
+    repo="y00913/blog-comments"
+    issue-term="pathname"
+    label="comments"
+    theme="github-light"
+    crossorigin="anonymous"
+    async
+  ></script>
+</article>

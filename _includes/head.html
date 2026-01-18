@@ -1,0 +1,90 @@
+<head>
+  {% unless page.is_sitemap %}
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
+    crossorigin="anonymous"
+  ></script>
+  <script type="text/javascript" src="//wcs.pstatic.net/wcslog.js"></script>
+  <script type="text/javascript">
+    if (!wcs_add) var wcs_add = {};
+    wcs_add["wa"] = "13b82ec531a1520";
+    if (window.wcs) {
+      wcs_do();
+    }
+  </script>
+  {% endunless %}
+
+  <meta
+    name="description"
+    content="{{ page.excerpt | strip_html | truncatewords: 20 | default: '오늘의 트렌드  정보 블로그' }}"
+  />
+  <meta
+    name="keywords"
+    content="{{ page.keyword | default: '트렌드, 트렌드 정보, 키워드, 요리, 외국 요리, 세계 요리, 조리법, 명언, 영단어, 요리 유래' }}"
+  />
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>
+    {%- assign cutoff_date = '2025-11-01' | date: "%s" -%} {%- assign
+    page_date_unix = page.date | date: "%s" -%} {%- if page.title -%} {%- if
+    page_date_unix < cutoff_date -%} {{ page.title | escape }} {{ page.date |
+    date: "%Y-%m-%d" }} {%- else -%} {{ page.title | escape }} {%- endif -%} {%-
+    else -%} {{ site.title | escape }} {%- endif -%}
+  </title>
+
+  <meta name="robots" content="index,follow" />
+  <meta property="og:site_name" content="ALOG" />
+  <meta property="og:title" content="{{ page.title | default: 'ALOG' }}" />
+  <meta
+    property="og:description"
+    content="{{ page.excerpt | strip_html | truncatewords: 20 | default: '오늘의 트렌드 정보 블로그' }}"
+  />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{{ page.url | absolute_url }}" />
+  <meta property="article:tag" content="트렌드" />
+  <meta property="article:tag" content="트렌드 정보" />
+  <meta property="article:tag" content="키워드" />
+  <meta property="article:tag" content="요리" />
+  <meta property="article:tag" content="외국 요리" />
+  <meta property="article:tab" content="세계 요리" />
+  <meta property="article:tag" content="조리법" />
+  <meta property="article:tag" content="명언" />
+  <meta property="article:tag" content="영단어" />
+  <meta property="article:tag" content="요리 유래" />
+  <link rel="canonical" href="{{ page.url | absolute_url }}" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  {%- feed_meta -%} {%- if jekyll.environment == 'production' and
+  site.google_analytics -%} {%- include google-analytics.html -%} {%- endif -%}
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "{{ page.url | absolute_url }}"
+      },
+      "headline": "{{ page.title | escape }}",
+      "description": "{{ page.excerpt | strip_html | strip_newlines | escape | truncate: 110 }}",
+      "author": {
+        "@type": "Person",
+        "name": "{{ site.author | default: site.title | escape }}"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "{{ site.title | escape }}",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://nokkiwa.github.io/favicon.ico"
+        }
+      },
+      "datePublished": "{{ page.date | date_to_xmlschema }}",
+      "dateModified": "{{ page.last_modified_at | default: page.date | date_to_xmlschema }}"
+    }
+  </script>
+</head>

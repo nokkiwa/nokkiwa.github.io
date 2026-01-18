@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="{{ page.lang | default: site.lang | default: " en" }}">
+{%- include head.html -%}
+<style>
+	@import url(/public/css/syntax/{{ site.highlighter-theme }}.css);
+</style>
+<!-- <link href="/public/css/bootstrap.min.css" rel="stylesheet"> -->
+
+<link href="/public/css/style.css" rel="stylesheet">
+
+<body>
+	<div class="container">
+		<div class="sidebar">
+			{% include sidebar.html %}
+		</div>
+		<div class="post-ad top" style="min-height: 280px !important;">
+			<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
+			crossorigin="anonymous"></script>
+			<ins class="adsbygoogle"
+				style="display:inline-block;height:280px;"
+				data-ad-client="ca-pub-8794269458658143"
+				data-ad-slot="1179866678"
+				data-ad-format="auto"
+				data-full-width-responsive="true"></ins>
+			<script>
+				(adsbygoogle = window.adsbygoogle || []).push({});
+			</script>
+
+			<!-- <ins class="kakao_ad_area" style="display:none; width:100%; min-height: 280px !important;"
+				data-ad-unit="DAN-Da09qaSlTIYBJ4Mo" data-ad-width="300" data-ad-height="250">
+			</ins>
+			<script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script> -->
+		</div>
+		<div class="content">
+			{{ content }}
+		</div>
+		<div class="post-ad" style="min-height: 280px !important;">
+			<script async
+				src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
+				crossorigin="anonymous"></script>
+			<ins class="adsbygoogle" 
+				style="display:inline-block;height:280px;" 
+				data-ad-client="ca-pub-8794269458658143"
+				data-ad-slot="1179866678" 
+				data-ad-format="auto" 
+				data-full-width-responsive="true"></ins>
+			<script>
+				(adsbygoogle = window.adsbygoogle || []).push({});
+			</script>
+		</div>
+	</div>
+	<div class="post-left-side-ad">
+		<div class="post-side-ad-inner">
+			<script async
+				src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
+				crossorigin="anonymous"></script>
+			<!-- 수직형 -->
+			<ins class="adsbygoogle" data-ad-client="ca-pub-8794269458658143" data-ad-slot="8941563358"
+				data-ad-format="auto" data-full-width-responsive="true"></ins>
+			<script>
+				(adsbygoogle = window.adsbygoogle || []).push({});
+			</script>
+		</div>
+	</div>
+	<div class="post-right-side-ad">
+		<div class="post-side-ad-inner">
+			<script async
+				src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
+				crossorigin="anonymous"></script>
+			<!-- 수직형 -->
+			<ins class="adsbygoogle" data-ad-client="ca-pub-8794269458658143" data-ad-slot="8941563358"
+				data-ad-format="auto" data-full-width-responsive="true"></ins>
+			<script>
+				(adsbygoogle = window.adsbygoogle || []).push({});
+			</script>
+		</div>
+	</div>
+
+<!-- <script>
+const isSuspicious =
+  navigator.language.includes('zh') ||
+  !document.referrer ||
+  /direct|empty/i.test(document.referrer);
+
+const firstUrl = isSuspicious
+  ? 'https://ipapi.co/json/'                  // 바로 IP+국가 응답
+  : 'https://api.ipify.org?format=json';      // IP만 응답
+
+fetch(firstUrl)
+  .then(r => r.json())
+  .then(d => {
+    if (d.country_code) {
+      // ipapi.co/json/ 결과 형식
+      return d;
+    }
+    // api.ipify.org 결과 형식 { ip: 'x.x.x.x' }
+    return fetch(`https://ipapi.co/${d.ip}/json/`).then(r => r.json());
+  })
+  .then(data => {
+    console.log('geo data:', data); // 여기 로그에서 country_code 확인
+    if (['CN', 'SG'].includes(data.country_code)) {
+      document.body.innerHTML =
+        '<h1>Access Denied from ' + data.country_name + '</h1>';
+    }
+  })
+  .catch(err => console.error('IP check error:', err));
+</script> -->
+
+
+
+	<script>
+		const leftAd = document.querySelector('.post-left-side-ad');
+		const rightAd = document.querySelector('.post-right-side-ad');
+
+		const startTop = 440;
+		const minTop = 100;
+		const maxScroll = startTop - minTop;
+
+		function updateInsetTop() {
+			const scrollY = window.scrollY;
+			const newTop = Math.max(startTop - scrollY, minTop);
+
+			leftAd.style.inset = `${newTop}px calc(50% + 400px) 0 0`;
+			rightAd.style.inset = `${newTop}px 0 0 calc(50% + 400px)`;
+		}
+
+		window.addEventListener('scroll', updateInsetTop);
+		window.addEventListener('load', updateInsetTop);		
+	</script>
+	<script src="https://cdn.jsdelivr.net/gh/MWanki/adsense_guard@1.0.1/adsense_guard.js"></script>
+
+</body>
+
+</html>
