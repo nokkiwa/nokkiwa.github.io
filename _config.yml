@@ -39,7 +39,6 @@ paginate: 20
 paginate_path: "/page:num/"
 category_dir: category/
 tag_dir: tag/
-google_analytics: G-X5JXGZWMR7
 
 # Exclude from processing.
 # The following items will not be processed, by default.
