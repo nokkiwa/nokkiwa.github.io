@@ -1,0 +1,3 @@
+I"#<p>클래스 이름이 hibernate 자동 생성 키워드와 같을 시 발생하는 오류이다.
+해결법은 <code class="language-plaintext highlighter-rouge">spring.jpa.properties.hibernate.globally_quoted_identifiers=true</code>을 application.properties에 추가해주면 된다.</p>
+:ET

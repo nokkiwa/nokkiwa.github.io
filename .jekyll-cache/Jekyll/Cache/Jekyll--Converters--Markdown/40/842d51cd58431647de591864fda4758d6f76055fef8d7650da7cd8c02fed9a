@@ -1,0 +1,140 @@
+I"/<h3 id="어떤-문제인가">어떤 문제인가</h3>
+
+<p>일 차선 다리를 트럭들이 정해진 순서대로 건널 때, <strong>모든 트럭이 다 건너는 데 걸리는 최소 시간</strong>을 구하는 문제다.</p>
+
+<ul>
+  <li>트럭은 1초에 1만큼 움직이고, 다리 길이는 <code class="language-plaintext highlighter-rouge">bridge_length</code></li>
+  <li>다리는 무게 <code class="language-plaintext highlighter-rouge">weight</code>까지 견딘다</li>
+  <li>다리에 완전히 오르지 않은 트럭의 무게는 세지 않는다</li>
+</ul>
+
+<p>다리 길이, 무게, 트럭 수 모두 최대 10,000이다.</p>
+
+<p><br /></p>
+
+<h3 id="시뮬레이션-문제다">시뮬레이션 문제다</h3>
+
+<p>계산식으로 한 번에 구하는 게 아니라, <strong>1초씩 시간을 흘려보내며 상태를 갱신</strong>하는 유형이다.
+다리 위에 무엇이 올라가 있고 각각 얼마나 남았는지를 관리하면 된다.</p>
+
+<p>다리는 일 차선이라 먼저 올라간 트럭이 먼저 내려온다. 그래서 큐가 자연스럽게 맞는 자료구조다.</p>
+
+<p><br /></p>
+
+<h3 id="접근-방식">접근 방식</h3>
+
+<p>다리 위에 올라가 있는 트럭을 큐를 이용하여 구현하였다. 변수는 이렇다.</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">sum</code> — 현재 다리 위의 트럭들의 무게 합</li>
+  <li><code class="language-plaintext highlighter-rouge">now</code> — 현재 다리 위에 올라와 있는 트럭들</li>
+  <li><code class="language-plaintext highlighter-rouge">length</code> — 다리 위에 올라와 있는 트럭들의 남은 거리</li>
+</ul>
+
+<p>매 초마다 하는 일은 세 가지다.</p>
+
+<p><strong>1. 다리 위 트럭들을 한 칸씩 전진시킨다.</strong>
+남은 거리가 1이던 트럭은 이번 초에 다리를 벗어나므로 큐에서 빼고 <code class="language-plaintext highlighter-rouge">sum</code>에서 무게를 뺀다.</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="n">length</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+<span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">size</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">){</span>
+    <span class="kt">int</span> <span class="n">l</span> <span class="o">=</span> <span class="n">length</span><span class="p">.</span><span class="n">front</span><span class="p">();</span>
+    <span class="n">length</span><span class="p">.</span><span class="n">pop</span><span class="p">();</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">l</span><span class="o">==</span><span class="mi">1</span><span class="p">){</span>
+        <span class="n">sum</span> <span class="o">-=</span> <span class="n">now</span><span class="p">.</span><span class="n">front</span><span class="p">();</span>
+        <span class="n">now</span><span class="p">.</span><span class="n">pop</span><span class="p">();</span>
+        <span class="k">continue</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">length</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>여기서 <code class="language-plaintext highlighter-rouge">int size = length.size()</code>를 <strong>미리 저장해 두는 게 중요하다.</strong>
+반복문 안에서 <code class="language-plaintext highlighter-rouge">push</code>를 하기 때문에, 조건식에 <code class="language-plaintext highlighter-rouge">length.size()</code>를 직접 쓰면 크기가 계속 늘어나 같은 트럭을 여러 번 전진시키게 된다.</p>
+
+<p><strong>2. 다음 트럭을 올릴 수 있으면 올린다.</strong>
+현재 무게 합에 다음 트럭 무게를 더해도 <code class="language-plaintext highlighter-rouge">weight</code>를 넘지 않을 때만 올린다.</p>
+
+<p><strong>3. 시간을 1 증가시킨다.</strong></p>
+
+<p>이 과정을 반복하다가 대기 중인 트럭도, 다리 위 트럭도 없어지면 멈추고 그때의 <code class="language-plaintext highlighter-rouge">answer</code>가 최소 시간이 된다.</p>
+
+<p><br /></p>
+
+<h3 id="종료-조건의-위치">종료 조건의 위치</h3>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">++</span><span class="n">answer</span><span class="p">;</span>
+
+<span class="k">if</span><span class="p">(</span><span class="n">truck_weights</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">now</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+    <span class="k">break</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">++answer</code>를 먼저 하고 종료를 확인한다.
+마지막 트럭이 다리를 벗어나는 그 순간도 1초로 세야 하기 때문이다. 순서를 바꾸면 답이 1 적게 나온다.</p>
+
+<p><br /></p>
+
+<h3 id="시간-복잡도">시간 복잡도</h3>
+
+<p>전체 반복 횟수는 대략 <strong>O(트럭 수 × 다리 길이)</strong> 이고, 여기에 매 초 다리 위 트럭을 훑는 비용이 붙는다.
+제한(각 10,000)에서는 통과했지만 여유가 많은 편은 아니다.</p>
+
+<p><code class="language-plaintext highlighter-rouge">truck_weights.erase(truck_weights.begin())</code>가 특히 비싼 부분이다.
+<code class="language-plaintext highlighter-rouge">vector</code>의 맨 앞 원소를 지우면 뒤의 원소를 전부 앞으로 당기므로 <strong>O(n)</strong> 이 든다. 트럭 목록도 <code class="language-plaintext highlighter-rouge">queue</code>나 인덱스로 관리했다면 이 비용을 없앨 수 있었다.</p>
+
+<p><br /></p>
+
+<h3 id="풀이-코드">풀이 코드</h3>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;queue&gt;
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">solution</span><span class="p">(</span><span class="kt">int</span> <span class="n">bridge_length</span><span class="p">,</span> <span class="kt">int</span> <span class="n">weight</span><span class="p">,</span> <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">truck_weights</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">answer</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">sum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">queue</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">now</span><span class="p">,</span> <span class="n">length</span><span class="p">;</span>
+    
+    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">){</span>
+        <span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="n">length</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+        <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">size</span><span class="p">;</span><span class="o">++</span><span class="n">i</span><span class="p">){</span>
+            <span class="kt">int</span> <span class="n">l</span> <span class="o">=</span> <span class="n">length</span><span class="p">.</span><span class="n">front</span><span class="p">();</span>
+            <span class="n">length</span><span class="p">.</span><span class="n">pop</span><span class="p">();</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">l</span><span class="o">==</span><span class="mi">1</span><span class="p">){</span>
+                <span class="n">sum</span> <span class="o">-=</span> <span class="n">now</span><span class="p">.</span><span class="n">front</span><span class="p">();</span>
+                <span class="n">now</span><span class="p">.</span><span class="n">pop</span><span class="p">();</span>
+                <span class="k">continue</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="n">length</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">l</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+        
+        <span class="k">if</span><span class="p">(</span><span class="n">truck_weights</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="o">&gt;</span><span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">sum</span><span class="o">+</span><span class="n">truck_weights</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&lt;=</span><span class="n">weight</span><span class="p">){</span>
+            <span class="n">sum</span> <span class="o">+=</span> <span class="n">truck_weights</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+            <span class="n">now</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">truck_weights</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+            <span class="n">length</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">bridge_length</span><span class="p">);</span>
+            <span class="n">truck_weights</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">truck_weights</span><span class="p">.</span><span class="n">begin</span><span class="p">());</span>
+        <span class="p">}</span>
+        
+        <span class="o">++</span><span class="n">answer</span><span class="p">;</span>
+        
+        <span class="k">if</span><span class="p">(</span><span class="n">truck_weights</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">now</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+            <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">answer</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><br /></p>
+
+<h3 id="더-줄일-수-있는-부분">더 줄일 수 있는 부분</h3>
+
+<p>지금은 트럭 목록과 남은 거리를 큐 두 개로 나눠 관리하는데, <code class="language-plaintext highlighter-rouge">pair</code>를 담은 큐 하나로 합치면 두 큐의 인덱스가 어긋날 걱정이 없다.
+다리 길이만큼의 큐를 만들고 0을 채워 넣는(빈 칸을 0으로 표현하는) 방식으로 풀면 코드가 더 짧아지기도 한다.</p>
+
+<p><br /><br /></p>
+
+<h3 id="문제-출처">문제 출처</h3>
+<p><a href="https://programmers.co.kr/learn/courses/30/lessons/42583">프로그래머스 다리를 지나는 트럭</a></p>
+:ET

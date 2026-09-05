@@ -1,37 +1,43 @@
----
-layout: page
-title: About
-permalink: /about/
----
+# KLOG
 
-<!-- ![이미지](https://user-gen-media-assets.s3.amazonaws.com/seedream_images/efe1c0cc-7c88-4ba9-a653-0e4c18c66ee3.png) -->
-![이미지](https://user-gen-media-assets.s3.amazonaws.com/seedream_images/c6279364-1598-4417-a1ab-92923b3d5e77.png)
+개발하며 만난 에러와 해결 기록을 남기는 개인 기술 블로그입니다.
 
-## 안녕하세요
-> 반갑습니다. 이 블로그는 빠르게 변화하는 최신 트렌드를 바탕으로 유용한 정보를 공유하는 공간입니다.
+- 사이트: https://nokkiwa.github.io
+- 정적 사이트 생성기: [Jekyll](https://jekyllrb.com/)
+- 호스팅: GitHub Pages
 
-### Features
-- IT, 테크, 디자인, 마케팅 등 다양한 분야의 최신 트렌드 분석과 해설
+## 카테고리
 
-- 실무에서 활용 가능한 트렌드 적용 사례 및 팁 제공
+| 디렉터리 | 내용 |
+|---|---|
+| `_posts/error` | 개발 중 만난 오류의 원인과 해결 과정 |
+| `_posts/infra` | 서버 운영, 배포, 네트워크 설정 |
+| `_posts/go` | Go 언어 학습 노트 |
+| `_posts/programmers` | 알고리즘 문제 풀이와 접근 방식 |
+| `_posts/project` | 토이 프로젝트 회고 |
 
-- 신기술, 인기 서비스, 시장 변화 등 실시간 이슈 다루기
+## 로컬 실행
 
-- 방문자들이 쉽게 이해하고 따라할 수 있도록 체계적이고 친절한 글쓰기
+```bash
+bundle install
+bundle exec jekyll serve
+```
 
-- 커뮤니티 의견 반영 및 지속적 콘텐츠 업데이트
+기본 주소는 http://localhost:4000 입니다.
 
+## 디렉터리 구조
 
+```
+_config.yml      사이트 설정
+_includes/       head, sidebar, 목록·본문 템플릿 조각
+_layouts/        default / page / post / category 레이아웃
+_posts/          글 (카테고리별 디렉터리)
+public/          CSS, 이미지 등 정적 파일
+about.md         소개 페이지
+privacy.md       개인정보처리방침
+contact.md       연락처
+```
 
-### Introduce
-현대 사회는 기술과 문화가 빠르게 변모하며 새로운 트렌드가 지속적으로 등장합니다.
-<br>
-이 블로그는 그러한 변화를 놓치지 않고, 트렌드 기반의 실질적이고 깊이 있는 콘텐츠를 제공합니다.
-<br>
-주요 주제로는 최신 IT 기술 동향, 디지털 마케팅 전략, 디자인 혁신, 소비자 행동 변화 등이 있으며,
-<br>
-독자들이 최신 트렌드를 쉽게 파악하고 자신의 업무나 생활에 적용할 수 있도록 돕는 것을 목표로 합니다.
-<br>
-끊임없이 변화하는 정보 속에서 신뢰할 수 있는 가이드가 될 수 있도록 최선을 다하겠습니다.
+## 라이선스
 
-<br/><br/>
+글의 저작권은 작성자에게 있습니다. 인용 시 출처를 남겨 주세요.

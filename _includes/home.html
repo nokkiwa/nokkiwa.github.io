@@ -30,7 +30,7 @@
             <li class="nav-title">Categories
             </li>
             <div id="categories-list">
-                {% assign hide_categories = "daily,programmers,project,go,error,infra,etc" | split: "," %}
+                {% assign hide_categories = "" | split: "," %}
                 {% for category in site.categories reversed %}
                     {% assign catname = category | first | strip %}
                     {% assign hide = false %}
@@ -43,7 +43,7 @@
                     {% unless hide %}
                         <li class="nav-list">
                             <a class="nav-item" href="{{ root_url }}/{{ site.category_dir }}#{{ category | first }}">
-                            <span class="name">{{ category | first }} 트렌드</span>
+                            <span class="name">{{ category | first }}</span>
                             <span class="badge">{{ category | last | size }}</span>
                             </a>
                         </li>
@@ -64,15 +64,13 @@
       {%- for post in paginator.posts -%}
       <li class="post-list-item post-category-{{post.categories}}">
         <a class="post-link-card" href="{{ post.url | relative_url }}">
+          {% if post.content contains '<img' %}
           <div class="post-thumb-wrap">
-            {% if post.content contains '<img' %}
-              {% assign first_img_tag = post.content | split: '<img' | slice: 1, 1 | first | split: '>' | first %}
-              {% assign src = first_img_tag | split: 'src="' | last | split: '"' | first %}
-              <img src="{{ src }}" class="post-thumb" alt="{{ post.title }}" loading="lazy" width="130" height="130">
-            {% else %}
-              <img src="https://user-gen-media-assets.s3.amazonaws.com/seedream_images/c6279364-1598-4417-a1ab-92923b3d5e77.png" class="post-thumb" alt="{{ post.title }}" loading="lazy" width="130" height="130">
-            {% endif %}
+            {% assign first_img_tag = post.content | split: '<img' | slice: 1, 1 | first | split: '>' | first %}
+            {% assign src = first_img_tag | split: 'src="' | last | split: '"' | first %}
+            <img src="{{ src }}" class="post-thumb" alt="{{ post.title }}" loading="lazy" width="130" height="130">
           </div>
+          {% endif %}
           <div class="post-info">
             <div class="post-info-title">{{ post.title | escape }}</div>
             <div class="post-info-date">{{ post.date | date: "%Y/%m/%d" }}</div>
@@ -82,35 +80,7 @@
           </div>
         </a>
       </li>
-      {% if forloop.index == 10 %}
-      <li class="post-list-ad">
-          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
-              crossorigin="anonymous"></script>
-          <ins class="adsbygoogle"
-              style="display:block"
-              data-ad-format="fluid"
-              data-ad-layout-key="-gh+i-2-mo+19k"
-              data-ad-client="ca-pub-8794269458658143"
-              data-ad-slot="5127310963"></ins>
-          <script>
-              (adsbygoogle = window.adsbygoogle || []).push({});
-          </script>
-      </li>
-      {% endif %}
       {%- endfor -%}
-      <li class="post-list-ad">
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
-            crossorigin="anonymous"></script>
-        <ins class="adsbygoogle"
-            style="display:block"
-            data-ad-format="fluid"
-            data-ad-layout-key="-gh+i-2-mo+19k"
-            data-ad-client="ca-pub-8794269458658143"
-            data-ad-slot="5127310963"></ins>
-        <script>
-            (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
-      </li>
     </ul>
 
 <!-- 페이지네이션 UI (숫자 버전 - 축약형) -->

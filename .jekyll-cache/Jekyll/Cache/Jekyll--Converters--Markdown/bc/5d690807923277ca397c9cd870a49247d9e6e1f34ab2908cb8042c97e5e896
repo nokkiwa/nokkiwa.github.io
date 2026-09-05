@@ -1,0 +1,44 @@
+I";<p>외부 서버 도커에 rabbitMQ를 올린 후 스프링부트와 연결을 시도를 했는데 오류가 계속해서 발생했었다…. <code class="language-plaintext highlighter-rouge">config</code> 설정은 아래와 같이 해주었었다.</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Slf4j</span>
+<span class="nd">@Configuration</span>
+<span class="nd">@EnableWebSocketMessageBroker</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">StompConfig</span> <span class="kd">implements</span> <span class="nc">WebSocketMessageBrokerConfigurer</span> <span class="o">{</span>
+    <span class="nd">@Value</span><span class="o">(</span><span class="s">"${host}"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="nc">Host</span><span class="o">;</span>
+    <span class="nd">@Value</span><span class="o">(</span><span class="s">"${relayPort}"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">relayPort</span><span class="o">;</span>
+    <span class="nd">@Value</span><span class="o">(</span><span class="s">"${clientId}"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">clientId</span><span class="o">;</span>
+    <span class="nd">@Value</span><span class="o">(</span><span class="s">"${clientPw}"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">clientPw</span><span class="o">;</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">configureMessageBroker</span><span class="o">(</span><span class="nc">MessageBrokerRegistry</span> <span class="n">registry</span><span class="o">){</span>
+        <span class="n">registry</span><span class="o">.</span><span class="na">setApplicationDestinationPrefixes</span><span class="o">(</span><span class="s">"/pub"</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">enableStompBrokerRelay</span><span class="o">(</span><span class="s">"/topic"</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">setRelayHost</span><span class="o">(</span><span class="nc">Host</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">setVirtualHost</span><span class="o">(</span><span class="s">"/"</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">setRelayPort</span><span class="o">(</span><span class="n">relayPort</span><span class="o">)</span>		<span class="c1">// 61613</span>
+                <span class="o">.</span><span class="na">setClientLogin</span><span class="o">(</span><span class="n">clientId</span><span class="o">)</span>		<span class="c1">// guest</span>
+                <span class="o">.</span><span class="na">setClientPasscode</span><span class="o">(</span><span class="n">clientPw</span><span class="o">);</span>	<span class="c1">// guest</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">registerStompEndpoints</span><span class="o">(</span><span class="nc">StompEndpointRegistry</span> <span class="n">registry</span><span class="o">){</span>
+        <span class="n">registry</span><span class="o">.</span><span class="na">addEndpoint</span><span class="o">(</span><span class="s">"/ws"</span><span class="o">).</span><span class="na">setAllowedOriginPatterns</span><span class="o">(</span><span class="s">"*"</span><span class="o">).</span><span class="na">withSockJS</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>이유는 도커에 올린 rabbitMQ에서 web stomp 플러그인 설정을 해주지 않아서였다 !! 아래 명령어를 차례로 입력해주면 아주 잘 연결된다.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># docker exec -it &lt;rabbitMQ 컨테이너&gt; /bin/bash
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># rabbitmq-plugins enable rabbitmq_web_stomp
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># rabbitmqctl stop
+# rabbitmqctl start_app
+# rabbitmqctl status
+</code></pre></div></div>
+<p>끝 !!</p>
+:ET

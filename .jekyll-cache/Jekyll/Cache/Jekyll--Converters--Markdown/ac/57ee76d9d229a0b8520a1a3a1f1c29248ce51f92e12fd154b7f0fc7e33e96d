@@ -1,0 +1,5 @@
+I"V<p>JPA를 통해 findByid를 사용하던 중 오류가 발생했다.
+<code class="language-plaintext highlighter-rouge">query did not return a unique result: 3</code>
+이는 repository에서 조회 결과는 3개인데 Class로 받아 담을 수 없기에 발생한다.
+List&lt;Class&gt;로 받게 되면 오류를 해결할 수 있다.</p>
+:ET

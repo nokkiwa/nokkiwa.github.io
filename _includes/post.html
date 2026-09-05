@@ -26,61 +26,23 @@
   <div class="post-content">
     {{ content }} 
     <auto-ads-exclusion-area>
-      <div class="post-ad top" style="min-height: 280px !important; padding-top: 80px;">
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
-        crossorigin="anonymous"></script>
-        <ins class="adsbygoogle"
-          style="display:inline-block;"
-          data-ad-client="ca-pub-8794269458658143"
-          data-ad-slot="1179866678"
-          data-ad-format="auto"
-          data-full-width-responsive="true"></ins>
-        <script>
-          (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
-      </div>
-    
-      {% assign url_string = "
-      /2025-12/2025/12/15/%EC%9D%B4%EB%A7%88%ED%8A%B8,_%EC%8B%A0%EC%84%B8%EA%B3%84%ED%91%B8%EB%93%9C_%EC%83%81%EC%9E%A5%ED%8F%90%EC%A7%80.html;
-      /2025-11/2025/11/26/%EC%97%B0%EB%A7%90%EC%A0%95%EC%82%B0_%EA%B8%B0%EA%B0%84.html;
-      /2025-12/2025/12/12/%EC%95%84%EB%85%B8%EC%8B%9C%EB%93%9C%EC%97%B0%EA%B3%A0.html;
-      /2025-12/2025/12/10/11%EC%9B%94_%EC%B7%A8%EC%97%85%EC%9E%90_22.5%EB%A7%8C_%EC%A6%9D%EA%B0%80.html;
-      /2025-4/2025/04/10/strobotron-에-대해서.html " | strip_newlines | replace: "
-      ", "" %} {% assign urls = url_string | split: ";" %} {% assign
-      selected_posts = "" | split: "" %} {% for url in urls %} {% assign
-      trimmed_url = url | strip %} {% for post in site.posts %} {% if post.url ==
-      trimmed_url %} {% assign selected_posts = selected_posts | push: post %} {%
-      break %} {% endif %} {% endfor %} {% endfor %}
+      {%- comment -%}
+        같은 카테고리의 다른 글을 추천한다. 예전에는 다른 사이트의 URL이
+        하드코딩돼 있어 카드가 하나도 렌더되지 않고 제목만 남아 있었다.
+      {%- endcomment -%}
+      {% assign related = "" | split: "" %}
+      {% for post in posts_in_category %}
+        {% if post.url != page.url and related.size < 4 %}
+          {% assign related = related | push: post %}
+        {% endif %}
+      {% endfor %}
 
+      {% if related.size > 0 %}
       <div class="recommand-contents">
-        <h2>최신 이슈 살펴보기</h2>
+        <h2>{{ current_category }} 카테고리의 다른 글</h2>
         <div class="cards">
-          {% for post in selected_posts %}
+          {% for post in related %}
           <a class="card" href="{{ post.url }}">
-            <div class="thumb-wrap">
-              {% if post.content contains '<img' %} {% assign first_img_tag =
-              post.content | split: '<img' | slice: 1, 1 | first | split: '>' |
-              first %} {% assign src = first_img_tag | split: 'src="' | last |
-              split: '"' | first %}
-              <img
-                src="{{ src }}"
-                class="card-thumb"
-                alt="{{ post.title }}"
-                loading="lazy"
-                width="130"
-                height="130"
-              />
-              {% else %}
-              <img
-                src="https://user-gen-media-assets.s3.amazonaws.com/seedream_images/c6279364-1598-4417-a1ab-92923b3d5e77.png"
-                class="card-thumb"
-                alt="{{ post.title }}"
-                loading="lazy"
-                width="130"
-                height="130"
-              />
-              {% endif %}
-            </div>
             <div class="card-info">
               <div class="card-title">{{ post.title }}</div>
               <div class="card-date">{{ post.date | date: "%Y-%m-%d" }}</div>
@@ -89,6 +51,7 @@
           {% endfor %}
         </div>
       </div>
+      {% endif %}
     </auto-ads-exclusion-area>
   </div>
 
@@ -123,50 +86,26 @@
       {% endif %} {% endif %}
     </div>
 
-    <div class="post-ad" style="min-height: 280px !important; padding-top: 80px;">
-      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
-      crossorigin="anonymous"></script>
-      <ins class="adsbygoogle"
-        style="display:inline-block;"
-        data-ad-client="ca-pub-8794269458658143"
-        data-ad-slot="1179866678"
-        data-ad-format="auto"
-        data-full-width-responsive="true"></ins>
-      <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      </script>
-    </div>
-
     <auto-ads-exclusion-area>
       <div class="recent-posts">
         <h2>최근 게시글</h2>
         <div class="cards">
           {% for post in site.posts limit:5 %}
           <a class="card" href="{{ post.url }}">
+            {% if post.content contains '<img' %}
             <div class="thumb-wrap">
-              {% if post.content contains '<img' %} {% assign first_img_tag =
-              post.content | split: '<img' | slice: 1, 1 | first | split: '>' |
-              first %} {% assign src = first_img_tag | split: 'src="' | last |
-              split: '"' | first %}
+              {% assign first_img_tag = post.content | split: '<img' | slice: 1, 1 | first | split: '>' | first %}
+              {% assign src = first_img_tag | split: 'src="' | last | split: '"' | first %}
               <img
                 src="{{ src }}"
-                class="card-thumb"
-                alt=" {{ post.title }}"
-                loading="lazy"
-                width="130"
-                height="130"
-              />
-              {% else %}
-              <img
-                src="https://user-gen-media-assets.s3.amazonaws.com/seedream_images/c6279364-1598-4417-a1ab-92923b3d5e77.png"
                 class="card-thumb"
                 alt="{{ post.title }}"
                 loading="lazy"
                 width="130"
                 height="130"
               />
-              {% endif %}
             </div>
+            {% endif %}
             <div class="card-info">
               <div class="card-title">{{ post.title }}</div>
               <div class="card-date">{{ post.date | date: "%Y-%m-%d" }}</div>

@@ -1,0 +1,178 @@
+I"�+<p>Spring Boot로 API를 만들면서 반복해서 마주친 오류 세 가지를 모아 정리했다.
+셋 다 메시지만 보면 뭐가 문제인지 감이 안 오는데, 원인을 알고 나면 전부 “JPA가 대신 해주던 일”과 관련이 있었다.</p>
+
+<p>검색하면 해결 코드는 금방 나오지만 왜 그런지가 잘 안 나와서, 다음에 또 만났을 때를 위해 원인까지 같이 적어 둔다.</p>
+
+<p><br /></p>
+
+<h2 id="1-sql-error-1064---예약어와-겹친-엔티티-이름">1. SQL Error 1064 - 예약어와 겹친 엔티티 이름</h2>
+
+<h3 id="증상">증상</h3>
+
+<p>애플리케이션은 뜨는데 특정 엔티티에 쿼리가 나갈 때 문법 오류가 난다.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java.sql.SQLSyntaxErrorException:
+You have an error in your SQL syntax; check the manual that corresponds to
+your MySQL server version for the right syntax to use near ...
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">1064</code>는 MySQL/MariaDB가 <strong>SQL 문법을 파싱하지 못했을 때</strong> 내는 범용 에러 코드다.
+내가 직접 쓴 쿼리가 없는데도 나서 한참을 헤맸다.</p>
+
+<h3 id="원인">원인</h3>
+
+<p>JPA는 엔티티 이름과 필드 이름을 그대로 테이블명·컬럼명으로 바꿔 쿼리를 만든다.
+그런데 그 이름이 DB의 <strong>예약어</strong>와 겹치면, DB 입장에서는 테이블 이름이 아니라 문법 키워드로 읽힌다.</p>
+
+<p>예를 들어 <code class="language-plaintext highlighter-rouge">Order</code>, <code class="language-plaintext highlighter-rouge">Group</code>, <code class="language-plaintext highlighter-rouge">Rank</code>, <code class="language-plaintext highlighter-rouge">Key</code>, <code class="language-plaintext highlighter-rouge">Desc</code> 같은 이름이 그렇다.
+<code class="language-plaintext highlighter-rouge">select ... from order</code>가 나가면 DB는 <code class="language-plaintext highlighter-rouge">order</code>를 <code class="language-plaintext highlighter-rouge">ORDER BY</code>의 그 order로 해석해서 문법이 깨진다.</p>
+
+<p>내가 쓴 쿼리가 아니라 <strong>하이버네이트가 생성한 쿼리</strong>에서 터지기 때문에, 코드를 아무리 봐도 원인이 안 보인다.</p>
+
+<h3 id="해결">해결</h3>
+
+<p><code class="language-plaintext highlighter-rouge">application.properties</code>에 아래를 추가하면 하이버네이트가 생성하는 모든 식별자를 따옴표로 감싼다.</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="py">spring.jpa.properties.hibernate.globally_quoted_identifiers</span><span class="p">=</span><span class="s">true</span>
+</code></pre></div></div>
+
+<p>이러면 <code class="language-plaintext highlighter-rouge">select ... from "order"</code>처럼 나가서 예약어와 부딪히지 않는다.</p>
+
+<h3 id="다시-겪지-않으려면">다시 겪지 않으려면</h3>
+
+<p>이 설정은 <strong>전체</strong>에 적용되는 방식이라, 이미 굴러가는 프로젝트에 중간에 켜면 기존 쿼리에 영향이 갈 수 있다.
+문제가 되는 엔티티가 하나뿐이라면 이름을 바꿔 주는 쪽이 부작용이 적다.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Entity</span>
+<span class="nd">@Table</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"orders"</span><span class="o">)</span>   <span class="c1">// 예약어 order 대신</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Order</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span>
+</code></pre></div></div>
+
+<p>애초에 엔티티 이름을 지을 때 예약어를 피하는 게 제일 낫다.</p>
+
+<p><br /></p>
+
+<h2 id="2-cannot-deserialize-from-object-value---기본-생성자가-없을-때">2. cannot deserialize from Object value - 기본 생성자가 없을 때</h2>
+
+<h3 id="증상-1">증상</h3>
+
+<p><code class="language-plaintext highlighter-rouge">POST</code>로 JSON을 받는 API에서 요청이 들어오는 순간 500이 난다.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cannot deserialize from Object value (no delegate- or property-based creator)
+</code></pre></div></div>
+
+<h3 id="원인-1">원인</h3>
+
+<p>Spring Boot는 요청 본문의 JSON을 객체로 바꿀 때 <strong>Jackson</strong>을 쓴다.
+Jackson의 기본 동작은 이렇다.</p>
+
+<ol>
+  <li>인자 없는 생성자로 빈 객체를 만든다</li>
+  <li>JSON의 각 필드를 setter나 리플렉션으로 채운다</li>
+</ol>
+
+<p>그런데 클래스에 <code class="language-plaintext highlighter-rouge">@AllArgsConstructor</code>만 붙어 있거나 직접 만든 생성자만 있으면, 자바는 기본 생성자를 자동으로 만들어 주지 않는다.
+그래서 1번 단계에서 바로 막힌다. 메시지의 “no delegate- or property-based creator”가 정확히 <strong>객체를 만들 방법이 없다</strong>는 뜻이다.</p>
+
+<h3 id="해결-1">해결</h3>
+
+<p>받는 쪽 DTO에 기본 생성자를 만들어 준다.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Getter</span>
+<span class="nd">@NoArgsConstructor</span>   <span class="c1">// 이것</span>
+<span class="nd">@AllArgsConstructor</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">SignUpRequest</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">email</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">password</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Lombok을 안 쓴다면 <code class="language-plaintext highlighter-rouge">public SignUpRequest() {}</code>를 직접 넣어도 같다.</p>
+
+<h3 id="다시-겪지-않으려면-1">다시 겪지 않으려면</h3>
+
+<ul>
+  <li>요청을 받는 DTO에는 습관적으로 <code class="language-plaintext highlighter-rouge">@NoArgsConstructor</code>를 붙여 둔다.</li>
+  <li>응답으로만 나가는 DTO는 직렬화(객체 → JSON)라 방향이 반대이므로 기본 생성자가 없어도 된다. 그래서 응답은 되는데 요청만 터지는 상황이 생긴다.</li>
+  <li><code class="language-plaintext highlighter-rouge">record</code>나 불변 객체로 받고 싶다면 <code class="language-plaintext highlighter-rouge">@NoArgsConstructor</code> 대신 생성자에 <code class="language-plaintext highlighter-rouge">@JsonCreator</code>와 <code class="language-plaintext highlighter-rouge">@JsonProperty</code>를 붙이는 방법도 있다.</li>
+</ul>
+
+<p><br /></p>
+
+<h2 id="3-query-did-not-return-a-unique-result---하나인-줄-알았던-결과">3. query did not return a unique result - 하나인 줄 알았던 결과</h2>
+
+<h3 id="증상-2">증상</h3>
+
+<p>조회 중에 아래 예외가 뜬다.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>query did not return a unique result: 3
+</code></pre></div></div>
+
+<p>뒤의 숫자는 실제로 조회된 행의 개수다. 3개가 나왔다는 뜻이다.</p>
+
+<h3 id="원인-2">원인</h3>
+
+<p>리턴 타입을 단일 객체로 선언한 메서드는 결과가 <strong>정확히 0개나 1개</strong>일 때만 동작한다.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Optional</span><span class="o">&lt;</span><span class="nc">Member</span><span class="o">&gt;</span> <span class="nf">findByName</span><span class="o">(</span><span class="nc">String</span> <span class="n">name</span><span class="o">);</span>   <span class="c1">// 이름이 중복되면 터진다</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">findById</code>처럼 PK로 찾는 건 항상 하나지만, PK가 아닌 컬럼으로 찾으면 여러 개가 나올 수 있다.
+JPA는 여러 개를 단일 객체에 담을 방법이 없어서 예외를 던진다.</p>
+
+<p>개발 중에는 데이터가 적어 하나만 나오다가, 데이터가 쌓이면서 뒤늦게 터지는 게 이 오류의 성격이다.</p>
+
+<h3 id="해결-2">해결</h3>
+
+<p>의도에 따라 둘 중 하나를 고른다.</p>
+
+<p><strong>여러 개가 나오는 게 정상이라면</strong> 리스트로 받는다.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">List</span><span class="o">&lt;</span><span class="nc">Member</span><span class="o">&gt;</span> <span class="nf">findByName</span><span class="o">(</span><span class="nc">String</span> <span class="n">name</span><span class="o">);</span>
+</code></pre></div></div>
+
+<p><strong>하나만 나와야 하는 게 맞다면</strong> 조건이 부족한 것이므로 조회 조건을 좁히거나, DB에 유니크 제약을 걸어 애초에 중복이 안 들어가게 막는다.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Column</span><span class="o">(</span><span class="n">unique</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+<span class="kd">private</span> <span class="nc">String</span> <span class="n">email</span><span class="o">;</span>
+</code></pre></div></div>
+
+<h3 id="다시-겪지-않으려면-2">다시 겪지 않으려면</h3>
+
+<p>리턴 타입을 단일 객체로 쓸 때는 “이 조건이 정말 유일한가”를 한 번 확인하는 게 좋다.
+유일하다고 생각한 근거가 코드가 아니라 <strong>지금 들어 있는 데이터</strong>라면, 언젠가는 터진다.</p>
+
+<p><br /></p>
+
+<h2 id="정리">정리</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>오류</th>
+      <th>진짜 원인</th>
+      <th>해결</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>SQL Error 1064</td>
+      <td>엔티티·필드 이름이 DB 예약어와 충돌</td>
+      <td>식별자 인용 설정 또는 이름 변경</td>
+    </tr>
+    <tr>
+      <td>cannot deserialize from Object value</td>
+      <td>Jackson이 쓸 기본 생성자가 없음</td>
+      <td><code class="language-plaintext highlighter-rouge">@NoArgsConstructor</code> 추가</td>
+    </tr>
+    <tr>
+      <td>did not return a unique result</td>
+      <td>단일 타입으로 받았는데 결과가 여러 개</td>
+      <td><code class="language-plaintext highlighter-rouge">List</code>로 받거나 조건·제약 보완</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>세 가지 모두 JPA와 Jackson이 자동으로 해주던 일이 내 코드의 전제와 어긋났을 때 생긴 문제였다.
+자동으로 처리되는 구간일수록 무엇을 전제로 동작하는지 알아 두는 편이 결국 빠르다는 걸 알게 됐다.</p>
+:ET

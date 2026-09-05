@@ -1,0 +1,50 @@
+I"<p>서비스 중인 사이트에서 최근들어 트래픽양이 많아졌다. 그로인해 여러 문제들이 있었는데 그중 하나인 병목 현상을 처리했던 경험을 기록으로 남겨볼려고 한다.
+트래픽 양이 제일 많은 저녁 시간대에 이상하게 사이트 응답 속도가 현저히 느려지는 현상이 지속되고 있었다. 우선 3가지 가능성을 생각했다.</p>
+
+<ol>
+  <li>api 응답 지연</li>
+  <li>캐시 처리 부재</li>
+  <li>인프라 네트워크 병목</li>
+</ol>
+
+<p>우선 백엔드 로그를 통해 해당 시간대의 응답 속도를 확인해보니 평균 10ms 로 굉장히 빠른 속도로 응답을 주고 있었다.
+클라이언트 쪽도 캐시 처리가 잘되어 있었고 nginx 캐시 버퍼도 문제가 없었다.
+그렇다면 남은 가능성은 인프라 문제였다.</p>
+
+<p>네트워크 병목이 발생한다면 보통 백로그 문제였고, 아래 명령어를 이용해 커널 설정들을 확인해보았다.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sysctl -a
+</code></pre></div></div>
+
+<p>위 명령어를 사용해 나온 설정들 중 확인해볼 값은 <code class="language-plaintext highlighter-rouge">net.ipv4.tcp_max_syn_backlog</code>, <code class="language-plaintext highlighter-rouge">net.core.somaxconn</code> 이다.
+간단하게 설명하면</p>
+
+<p><strong>net.ipv4.tcp_max_syn_backlog =&gt; 3-way handshake 에서 사용되는 SYN 패킷을 처리하는 큐의 최댓값</strong>
+<strong>net.core.somaxconn =&gt; 프로세스로부터 accept되기를 기다리는 완성된 연결 수의 최댓값</strong></p>
+
+<p><em>참고 https://brunch.co.kr/@growthminder/23</em></p>
+
+<p>위 두 값을 확인해봤을때는 4096으로, 충분히 많은 값이 할당되어 있었고, 커널 설정은 문제가 없음을 확인하고 nginx 쪽을 살펴보았다.
+찾아보니 nginx에서 사용되는 백로그 크기는 커널의 SOMAXCONN 값과 기본 nginx 백로그 값인 511 중 작은 값을 할당한다고 되어있었다. 그래서 nginx 설정을 아래와 같이 바꿨다.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>server {
+	listen 443 default_server backlog=4096
+    ~~
+}
+</code></pre></div></div>
+
+<p>마지막으로 톰캣을 확인해보았다. <code class="language-plaintext highlighter-rouge">ss -nta</code>로  443 포트의 백로그 큐를 확인해보니 128이 나오고 있었다. 찾아보니 톰캣도 따로 설정을 해주어야했다…
+application.yml 쪽에 아래 내용을 추가해주었다.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>server:
+	tomcat:
+    	accept-count:4096
+</code></pre></div></div>
+<p>그후 다시 확인해보니 4096으로 수정되었고 네트워크 지연 현상은 발생하지 않았다.
+동시 접속자가 2500명 정도긴 해도 대규모 트래픽에서 발생할 수 있는 네트워크 병목 현상을 처리해보았다.
+백로그에 대해 얼핏만 알고 있었는데 이부분이 문제가 될줄은 몰랐다…
+다음에는 커널의 여러 설정들에 대해 공부해보고 네트워크 처리 부분을 좀 더 효율적으로 수정해봐야겠다.</p>
+
+<p>끝</p>
+
+<p><em>참고 https://brunch.co.kr/@growthminder/23</em>
+<em>참고 https://meetup.nhncloud.com/posts/54</em></p>
+:ET

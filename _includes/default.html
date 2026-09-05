@@ -13,24 +13,6 @@
 		<div class="sidebar">
 			{% include sidebar.html %}
 		</div>
-		<div class="post-ad top" style="min-height: 280px !important;">
-			<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
-			crossorigin="anonymous"></script>
-			<ins class="adsbygoogle"
-				style="display:inline-block;height:280px;"
-				data-ad-client="ca-pub-8794269458658143"
-				data-ad-slot="1179866678"
-				data-ad-format="auto"
-				data-full-width-responsive="true"></ins>
-			<script>
-				(adsbygoogle = window.adsbygoogle || []).push({});
-			</script>
-
-			<!-- <ins class="kakao_ad_area" style="display:none; width:100%; min-height: 280px !important;"
-				data-ad-unit="DAN-Da09qaSlTIYBJ4Mo" data-ad-width="300" data-ad-height="250">
-			</ins>
-			<script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script> -->
-		</div>
 		<div class="content">
 			{{ content }}
 		</div>
@@ -49,31 +31,19 @@
 			</script>
 		</div>
 	</div>
-	<div class="post-left-side-ad">
-		<div class="post-side-ad-inner">
-			<script async
-				src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
-				crossorigin="anonymous"></script>
-			<ins class="adsbygoogle" data-ad-client="ca-pub-8794269458658143" data-ad-slot="8941563358"
-				data-ad-format="auto" data-full-width-responsive="true"></ins>
-			<script>
-				(adsbygoogle = window.adsbygoogle || []).push({});
-			</script>
-		</div>
-	</div>
-	<div class="post-right-side-ad">
-		<div class="post-side-ad-inner">
-			<script async
-				src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8794269458658143"
-				crossorigin="anonymous"></script>
-			<ins class="adsbygoogle" data-ad-client="ca-pub-8794269458658143" data-ad-slot="8941563358"
-				data-ad-format="auto" data-full-width-responsive="true"></ins>
-			<script>
-				(adsbygoogle = window.adsbygoogle || []).push({});
-			</script>
-		</div>
-	</div>
 
+	<footer class="site-footer">
+		<nav class="site-footer-nav">
+			<a href="/">홈</a>
+			<a href="/category/">카테고리</a>
+			<a href="/about/">소개</a>
+			<a href="/privacy/">개인정보처리방침</a>
+			<a href="/contact/">연락처</a>
+		</nav>
+		<p class="site-footer-copy">
+			&copy; {{ 'now' | date: "%Y" }} {{ site.title }}. {{ site.tagline }}
+		</p>
+	</footer>
 <!-- <script>
 const isSuspicious =
   navigator.language.includes('zh') ||
@@ -106,25 +76,6 @@ fetch(firstUrl)
 
 
 
-	<script>
-		const leftAd = document.querySelector('.post-left-side-ad');
-		const rightAd = document.querySelector('.post-right-side-ad');
-
-		const startTop = 440;
-		const minTop = 100;
-		const maxScroll = startTop - minTop;
-
-		function updateInsetTop() {
-			const scrollY = window.scrollY;
-			const newTop = Math.max(startTop - scrollY, minTop);
-
-			leftAd.style.inset = `${newTop}px calc(50% + 400px) 0 0`;
-			rightAd.style.inset = `${newTop}px 0 0 calc(50% + 400px)`;
-		}
-
-		window.addEventListener('scroll', updateInsetTop);
-		window.addEventListener('load', updateInsetTop);		
-	</script>
 	<script src="https://cdn.jsdelivr.net/gh/MWanki/adsense_guard@1.0.1/adsense_guard.js"></script>
 
 </body>

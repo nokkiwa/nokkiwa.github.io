@@ -1,0 +1,88 @@
+I"b<h3 id="어떤-문제인가">어떤 문제인가</h3>
+
+<p>1, 2, 4 세 개의 숫자만으로 모든 자연수를 표현하는 체계가 있다고 할 때, 주어진 십진수 <code class="language-plaintext highlighter-rouge">n</code>을 그 표현으로 바꾸는 문제다.
+n은 5억 이하의 자연수다.</p>
+
+<p>말하자면 <strong>0이 없는 3진법</strong>이다. 일반 3진법은 0, 1, 2를 쓰는데 여기서는 1, 2, 4를 쓴다.</p>
+
+<p><br /></p>
+
+<h3 id="접근-방식">접근 방식</h3>
+
+<p>124를 일종의 3진법으로 생각하여 문제를 접근하였다.
+<code class="language-plaintext highlighter-rouge">while</code>문 내에서 n을 3으로 나누면서 나머지 1, 2, 0을 각각 1, 2, 4에 대응시켜 <code class="language-plaintext highlighter-rouge">answer</code>에 <code class="language-plaintext highlighter-rouge">push_back</code> 해준 뒤, <code class="language-plaintext highlighter-rouge">reverse</code> 함수로 앞뒤를 바꿔주었다.</p>
+
+<p>여기서 핵심은 <strong>나머지가 0일 때의 처리</strong>다.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>n % 3 == 1  →  '1',  n /= 3
+n % 3 == 2  →  '2',  n /= 3
+n % 3 == 0  →  '4',  n = n/3 - 1
+</code></pre></div></div>
+
+<p>앞의 두 경우는 일반 진법 변환과 똑같은데, 나머지가 0인 경우만 <code class="language-plaintext highlighter-rouge">n/3</code>이 아니라 <strong><code class="language-plaintext highlighter-rouge">n/3 - 1</code></strong> 을 해준다.</p>
+
+<p>이 부분이 처음에 막혔던 지점이라 왜 그런지 따로 정리해 둔다.
+일반 3진법에서 나머지 0은 자릿수 0을 뜻하지만, 이 체계에는 0이 없다. 나머지가 0이면 3의 배수라는 뜻이고, 그 자리에 4를 쓴다.
+4를 쓴다는 건 <strong>3을 한 번 빌려 쓴 것</strong>이므로, 윗자리에서 1을 빼줘야 계산이 맞는다.</p>
+
+<p>예를 들어 n = 3일 때, 나머지가 0이므로 ‘4’를 쓰고 <code class="language-plaintext highlighter-rouge">n = 3/3 - 1 = 0</code>이 되어 반복이 끝난다. 결과는 “4”다.
+<code class="language-plaintext highlighter-rouge">-1</code>이 없었다면 <code class="language-plaintext highlighter-rouge">n = 1</code>이 남아서 “14”라는 틀린 답이 나온다.</p>
+
+<p><br /></p>
+
+<h3 id="시간-복잡도">시간 복잡도</h3>
+
+<p>n을 매 반복마다 3으로 나누므로 자릿수만큼만 돈다. <strong>O(log₃ n)</strong> 이다.
+n이 5억이어도 반복은 19번 정도라 여유롭다.</p>
+
+<p><br /></p>
+
+<h3 id="풀이-코드">풀이 코드</h3>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="n">string</span> <span class="nf">solution</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">string</span> <span class="n">answer</span> <span class="o">=</span> <span class="s">""</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">r</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">3</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">r</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">answer</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="sc">'4'</span><span class="p">);</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="o">/</span><span class="mi">3</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">r</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">answer</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="sc">'1'</span><span class="p">);</span>
+            <span class="n">n</span> <span class="o">/=</span> <span class="mi">3</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="n">answer</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="sc">'2'</span><span class="p">);</span>
+            <span class="n">n</span> <span class="o">/=</span> <span class="mi">3</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">reverse</span><span class="p">(</span><span class="n">answer</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">answer</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+
+    <span class="k">return</span> <span class="n">answer</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>낮은 자리부터 구해지므로 마지막에 <code class="language-plaintext highlighter-rouge">reverse</code>로 뒤집는다.
+앞에서부터 만들려고 <code class="language-plaintext highlighter-rouge">answer = c + answer</code> 같은 식으로 붙이면 문자열을 매번 새로 만들게 되어 더 느리다.</p>
+
+<p><br /></p>
+
+<h3 id="배운-점">배운 점</h3>
+
+<p>진법 변환 문제인데 <strong>0이 없다</strong>는 조건 하나가 붙으면 계산이 달라진다는 걸 알게 됐다.
+비슷한 유형(예: 엑셀 열 이름 A~Z를 숫자로 바꾸기)에서도 같은 방식의 보정이 필요하다.</p>
+
+<p><br /><br /></p>
+
+<h3 id="문제-출처">문제 출처</h3>
+<p><a href="https://programmers.co.kr/learn/courses/30/lessons/12899">프로그래머스 124 나라의 숫자</a></p>
+:ET

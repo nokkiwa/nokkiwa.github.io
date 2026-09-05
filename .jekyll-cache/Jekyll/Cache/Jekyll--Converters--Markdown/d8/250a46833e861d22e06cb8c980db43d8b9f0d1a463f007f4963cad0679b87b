@@ -1,0 +1,117 @@
+I"�+<h3 id="어떤-문제인가">어떤 문제인가</h3>
+
+<p>캐시 크기와 도시 이름 목록이 주어질 때, <strong>LRU 방식으로 캐시를 운영했을 때의 총 실행시간</strong>을 구하는 문제다.</p>
+
+<ul>
+  <li>cache hit이면 1, cache miss면 5가 더해진다</li>
+  <li>도시 이름은 대소문자를 구분하지 않는다</li>
+  <li>캐시 크기는 0 이상 30 이하, 도시는 최대 100,000개</li>
+</ul>
+
+<p><br /></p>
+
+<h3 id="lru가-핵심">LRU가 핵심</h3>
+
+<p>LRU 알고리즘에 대해 알고 있다면 쉽게 문제를 해결할 수 있다.
+LRU(Least Recently Used)는 페이지 교체 알고리즘의 일종으로, <strong>가장 오랫동안 참조되지 않은 항목을 교체</strong>하는 기법이다. 이번 문제의 핵심이다.</p>
+
+<p>주의할 건 “가장 오래 전에 들어온 것”이 아니라 “가장 오래 전에 <strong>쓰인</strong> 것”이라는 점이다.
+그래서 캐시에 이미 있는 값을 다시 참조해도(hit) 그 값을 가장 최근 위치로 <strong>옮겨줘야</strong> 한다. 이 갱신을 빼먹으면 LRU가 아니라 FIFO가 된다.</p>
+
+<p><br /></p>
+
+<h3 id="왜-queue가-아니라-deque인가">왜 queue가 아니라 deque인가</h3>
+
+<p>나는 이러한 방식을 <code class="language-plaintext highlighter-rouge">queue</code>를 이용하여 해결하려고 했었다.
+그러나 큐를 이용하게 되면 <strong>중간에 위치한 값들에 접근하기가 쉽지 않아</strong>, 큐보다 쉽게 값에 접근할 수 있는 <code class="language-plaintext highlighter-rouge">deque</code>를 이용하였다.</p>
+
+<p><code class="language-plaintext highlighter-rouge">queue</code>는 앞에서 빼고 뒤에서 넣는 것만 되는데, LRU는 hit이 났을 때 <strong>중간에 있는 값을 꺼내 맨 앞으로 옮기는</strong> 동작이 필요하다.
+<code class="language-plaintext highlighter-rouge">deque</code>는 인덱스로 접근할 수 있고 양쪽 끝에서 삽입·삭제가 되므로 이 동작이 자연스럽게 표현된다.</p>
+
+<p>정리하면 이렇게 동작한다.</p>
+
+<ul>
+  <li><strong>hit</strong> — 해당 위치에서 지우고 <code class="language-plaintext highlighter-rouge">push_front</code>. 실행시간 +1</li>
+  <li><strong>miss &amp; 여유 있음</strong> — <code class="language-plaintext highlighter-rouge">push_front</code>. 실행시간 +5</li>
+  <li><strong>miss &amp; 가득 참</strong> — <code class="language-plaintext highlighter-rouge">pop_back</code>(가장 오래 안 쓰인 것 제거) 후 <code class="language-plaintext highlighter-rouge">push_front</code>. 실행시간 +5</li>
+</ul>
+
+<p><br /></p>
+
+<h3 id="접근-방식">접근 방식</h3>
+
+<p>우선 모든 대문자를 소문자로 바꾸어 구분을 없애주고, <code class="language-plaintext highlighter-rouge">cacheSize</code> 크기의 <code class="language-plaintext highlighter-rouge">deque</code>에 차례대로 값을 넣으면서 LRU 방식에 맞게 교체해주었다.
+값이 이미 있으면 cache hit이므로 <code class="language-plaintext highlighter-rouge">answer += 1</code>, 없으면 cache miss이므로 <code class="language-plaintext highlighter-rouge">answer += 5</code>를 해주면서 실행시간을 구해냈다.</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">transform</span><span class="p">(</span><span class="n">elem</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">elem</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">elem</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="o">::</span><span class="n">tolower</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>대소문자를 구분하지 않는다는 조건 때문에 비교 전에 전부 소문자로 맞춘다.
+이 처리를 빼먹으면 “Jeju”와 “JEJU”를 다른 도시로 세게 되어 답이 틀린다.</p>
+
+<p><br /></p>
+
+<h3 id="캐시-크기가-0인-경우">캐시 크기가 0인 경우</h3>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">cacheSize</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="n">cities</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">*</span> <span class="mi">5</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">cacheSize</code>가 0이면 아무것도 담기지 않으므로 전부 miss다. 도시 수 × 5를 바로 돌려주면 된다.
+이 처리를 안 하면 <code class="language-plaintext highlighter-rouge">cacheSize == dq.size()</code>가 <code class="language-plaintext highlighter-rouge">0 == 0</code>으로 참이 되면서 빈 <code class="language-plaintext highlighter-rouge">deque</code>에 <code class="language-plaintext highlighter-rouge">pop_back()</code>을 호출하게 되어 정의되지 않은 동작에 빠진다.</p>
+
+<p><br /></p>
+
+<h3 id="시간-복잡도">시간 복잡도</h3>
+
+<p>도시 하나마다 <code class="language-plaintext highlighter-rouge">deque</code> 안을 선형으로 탐색하므로 <strong>O(도시 수 × 캐시 크기)</strong> 다.
+캐시 크기가 최대 30으로 작아서 100,000 × 30 = 300만 번 정도이고, 제한 안에 충분히 들어온다.</p>
+
+<p>캐시가 훨씬 컸다면 <code class="language-plaintext highlighter-rouge">unordered_map</code>으로 위치를 O(1)에 찾고 연결 리스트로 순서를 관리하는, 실제 LRU 캐시 구현 방식이 필요했을 것이다.</p>
+
+<p><br /></p>
+
+<h3 id="풀이-코드">풀이 코드</h3>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;deque&gt;
+#include &lt;algorithm&gt;
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">solution</span><span class="p">(</span><span class="kt">int</span> <span class="n">cacheSize</span><span class="p">,</span> <span class="n">vector</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">cities</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">answer</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">deque</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">dq</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">cacheSize</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="n">cities</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">*</span> <span class="mi">5</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">elem</span> <span class="o">:</span> <span class="n">cities</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">transform</span><span class="p">(</span><span class="n">elem</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">elem</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">elem</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="o">::</span><span class="n">tolower</span><span class="p">);</span>
+        <span class="kt">bool</span> <span class="n">tf</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">dq</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">elem</span> <span class="o">==</span> <span class="n">dq</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="p">{</span>
+                <span class="n">tf</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">tf</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">dq</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">dq</span><span class="p">.</span><span class="n">begin</span><span class="p">()</span> <span class="o">+</span> <span class="n">i</span><span class="p">);</span>
+            <span class="n">dq</span><span class="p">.</span><span class="n">push_front</span><span class="p">(</span><span class="n">elem</span><span class="p">);</span>
+            <span class="n">answer</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">cacheSize</span> <span class="o">==</span> <span class="n">dq</span><span class="p">.</span><span class="n">size</span><span class="p">())</span> <span class="n">dq</span><span class="p">.</span><span class="n">pop_back</span><span class="p">();</span>
+            <span class="n">dq</span><span class="p">.</span><span class="n">push_front</span><span class="p">(</span><span class="n">elem</span><span class="p">);</span>
+            <span class="n">answer</span> <span class="o">+=</span> <span class="mi">5</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">answer</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">for (auto elem : cities)</code>가 값 복사인 것이 여기서는 오히려 편했다.
+<code class="language-plaintext highlighter-rouge">elem</code>을 소문자로 바꿔도 원본 <code class="language-plaintext highlighter-rouge">cities</code>는 그대로라 부작용이 없다. 참조(<code class="language-plaintext highlighter-rouge">auto&amp;</code>)로 받았다면 입력을 훼손하게 된다.</p>
+
+<p><br /><br /></p>
+
+<h3 id="문제-출처">문제 출처</h3>
+<p><a href="https://programmers.co.kr/learn/courses/30/lessons/17680">프로그래머스 캐시</a></p>
+:ET

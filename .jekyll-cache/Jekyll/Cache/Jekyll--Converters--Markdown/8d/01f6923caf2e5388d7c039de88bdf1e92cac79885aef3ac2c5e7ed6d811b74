@@ -1,0 +1,80 @@
+I"�<h3 id="url-checker---use-single-thread">URL Checker - Use Single-Thread</h3>
+<p>아래 코드는 싱글 스레드를 이용한 방식으로 시간이 많이 걸린다. 파이썬과 같은 방식이라고 보면 된다. 
+<br /><br /></p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+	<span class="s">"errors"</span>
+	<span class="s">"fmt"</span>
+	<span class="s">"net/http"</span>
+<span class="p">)</span>
+
+<span class="k">var</span> <span class="n">errRequestFailed</span> <span class="o">=</span> <span class="n">errors</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="s">"Requset failed"</span><span class="p">)</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">var</span> <span class="n">results</span> <span class="o">=</span> <span class="nb">make</span><span class="p">(</span><span class="k">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span><span class="p">)</span>       <span class="c">//make는 빈 map을 만들어줌, 혹은 var results = map[string]string{} 으로도 가능</span>
+	<span class="n">urls</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span>
+		<span class="s">"https://www.airbnb.com/"</span><span class="p">,</span>
+		<span class="s">"https://www.google.com/"</span><span class="p">,</span>
+		<span class="s">"https://www.amazon.com/"</span><span class="p">,</span>
+		<span class="s">"https://www.reddit.com/"</span><span class="p">,</span>
+		<span class="s">"https://www.google.com/"</span><span class="p">,</span>
+		<span class="s">"https://soundcloud.com/"</span><span class="p">,</span>
+		<span class="s">"https://www.facebook.com/"</span><span class="p">,</span>
+		<span class="s">"https://www.instagram.com/"</span><span class="p">,</span>
+		<span class="s">"https://academy.nomadcoders.co/"</span><span class="p">,</span>
+	<span class="p">}</span>
+	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">url</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">urls</span> <span class="p">{</span>
+		<span class="n">result</span> <span class="o">:=</span> <span class="s">"OK"</span>
+		<span class="n">err</span> <span class="o">:=</span> <span class="n">hitURL</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>     <span class="c">//에러 발견</span>
+			<span class="n">result</span> <span class="o">=</span> <span class="s">"FAILED"</span>
+		<span class="p">}</span>
+		<span class="n">results</span><span class="p">[</span><span class="n">url</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+	<span class="p">}</span>
+	<span class="k">for</span> <span class="n">url</span><span class="p">,</span> <span class="n">result</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">results</span> <span class="p">{</span>
+		<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">hitURL</span><span class="p">(</span><span class="n">url</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"Checking:"</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+	<span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">http</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="o">||</span> <span class="n">resp</span><span class="o">.</span><span class="n">StatusCode</span> <span class="o">&gt;=</span> <span class="m">400</span> <span class="p">{</span>
+		<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">resp</span><span class="o">.</span><span class="n">StatusCode</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">errRequestFailed</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="no">nil</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h3 id="goroutines">Goroutines</h3>
+<p>간단하게 병렬 처리 방식인 goroutines에 대해 설명하자면 싱글 -&gt; 멀티로 바꿔주는 thread이다.
+<img src="/public/img/goroutine.png" alt="" /></p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+	<span class="s">"fmt"</span>
+	<span class="s">"time"</span>
+<span class="p">)</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">go</span> <span class="n">sexyCount</span><span class="p">(</span><span class="s">"nico"</span><span class="p">)</span> <span class="c">//goroutines는 main 함수가 작동하는 동안만 유효</span>
+	<span class="k">go</span> <span class="n">sexyCount</span><span class="p">(</span><span class="s">"flynn"</span><span class="p">)</span>
+	<span class="n">time</span><span class="o">.</span><span class="n">Sleep</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">Second</span> <span class="o">*</span> <span class="m">5</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">sexyCount</span><span class="p">(</span><span class="n">person</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="m">10</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">person</span><span class="p">,</span> <span class="s">"is sexy"</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+		<span class="n">time</span><span class="o">.</span><span class="n">Sleep</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">Second</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+<p>병렬 처리를 아주 쉽게 해줄 수 있다는 점이 golang의 장점인 것 같다.</p>
+
+<p><br /><br /><br /><br /><br /><br /><br /><br /></p>
+:ET

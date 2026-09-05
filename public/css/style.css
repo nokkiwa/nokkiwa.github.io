@@ -1075,3 +1075,56 @@ article .ap_container {
     margin: 70px 5% 70px 5% !important;
   }
 }
+
+/* ── 사이트 공통 푸터 ──
+   소개·개인정보처리방침·연락처는 모든 페이지에서 닿을 수 있어야 해서
+   default.html 하단에 넣었다. 본문 폭(760px)에 맞춰 가운데 정렬한다. */
+.site-footer {
+  border-top: 1px solid #e5e5e5;
+  margin-top: 80px;
+  padding: 32px 20px 48px;
+  text-align: center;
+  background: #fafafa;
+}
+
+.site-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 20px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.site-footer-nav a {
+  color: #444;
+  font-size: 14px;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.site-footer-nav a:hover {
+  color: #000;
+  border-bottom-color: #999;
+}
+
+.site-footer-copy {
+  max-width: 760px;
+  margin: 16px auto 0;
+  color: #888;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media screen and (max-width: 768px) {
+  .site-footer {
+    margin-top: 48px;
+    padding: 24px 16px 36px;
+  }
+  .site-footer-nav {
+    gap: 8px 14px;
+  }
+  .site-footer-nav a {
+    font-size: 13px;
+  }
+}

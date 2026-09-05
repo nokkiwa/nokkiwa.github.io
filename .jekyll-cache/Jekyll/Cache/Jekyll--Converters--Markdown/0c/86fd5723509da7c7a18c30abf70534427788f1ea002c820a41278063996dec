@@ -1,0 +1,122 @@
+I"g3<h3 id="어떤-문제인가">어떤 문제인가</h3>
+
+<p>여러 명이 둥글게 앉아 0부터 숫자를 한 글자씩 돌아가며 말하는 게임이다.
+10 이상이면 자릿수를 쪼개서 한 사람이 한 글자씩 말한다.</p>
+
+<p>진법 <code class="language-plaintext highlighter-rouge">n</code>, 구할 개수 <code class="language-plaintext highlighter-rouge">t</code>, 인원 <code class="language-plaintext highlighter-rouge">m</code>, 내 순서 <code class="language-plaintext highlighter-rouge">p</code>가 주어질 때 <strong>내가 말해야 하는 글자 t개</strong>를 구하면 된다.
+n은 2~16, t는 1,000 이하, m은 2~100이다. 10~15는 A~F로 나타낸다.</p>
+
+<p>예를 들어 2진법이면 전체 수열은 <code class="language-plaintext highlighter-rouge">0, 1, 1, 0, 1, 1, 1, 0, 0, 1, ...</code> 이 되고, 여기서 내 순서에 해당하는 것만 골라내면 된다.</p>
+
+<p><br /></p>
+
+<h3 id="두-단계로-나눠-생각했다">두 단계로 나눠 생각했다</h3>
+
+<p>이 문제를 처음 생각할 때는 반복문을 이용해 0부터 n진수를 차례대로 구해주면서 내 순서에 해당하는 문자를 <code class="language-plaintext highlighter-rouge">answer</code>에 저장하는 식으로 짜면 되겠다고 생각했고, 그대로 옮긴 뒤 몇 부분을 수정하니 통과가 되었다.</p>
+
+<ol>
+  <li><strong>0, 1, 2, … 를 차례로 n진수 문자열로 바꾼다</strong></li>
+  <li><strong>그 문자열을 한 글자씩 흘려보내며 순번을 세고, 내 차례면 답에 담는다</strong></li>
+</ol>
+
+<p>반복문을 이용해 n진수를 구하는 방법은 앞서 정리한 <a href="/programmers/2021/02/15/프로그래머스_124나라의숫자.html">124 나라의 숫자</a>에서 쓴 방식과 같다.
+나머지를 구해 앞에 붙이고 몫으로 넘어가는 것을 반복하되, 나머지가 10 이상이면 A~F로 바꿔준다.</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">num</span> <span class="o">%</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">)</span> <span class="n">tmp</span> <span class="o">=</span> <span class="n">alphabat</span><span class="p">[</span><span class="n">num</span> <span class="o">%</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">10</span><span class="p">]</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">;</span>
+<span class="k">else</span> <span class="n">tmp</span> <span class="o">=</span> <span class="n">number</span><span class="p">[</span><span class="n">num</span> <span class="o">%</span> <span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">;</span>
+<span class="n">num</span> <span class="o">/=</span> <span class="n">n</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p><br /></p>
+
+<h3 id="막혔던-두-지점">막혔던 두 지점</h3>
+
+<p><strong>첫째, 0이 나오지 않는 문제.</strong>
+<code class="language-plaintext highlighter-rouge">while (num &gt; 0)</code>으로 도는 구조라 <code class="language-plaintext highlighter-rouge">num</code>이 0일 때는 반복문이 한 번도 안 돌아 빈 문자열이 된다.
+수열은 0부터 시작하므로 이 첫 글자가 통째로 빠져 전체 순번이 밀린다. 그래서 따로 처리해 줬다.</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="n">tmp</span> <span class="o">+=</span> <span class="s">"0"</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p><strong>둘째, 반복이 안 끝나는 문제.</strong>
+<code class="language-plaintext highlighter-rouge">if (answer.size() == t) break;</code>만 바깥쪽에 두었더니, <code class="language-plaintext highlighter-rouge">answer</code>의 크기가 <code class="language-plaintext highlighter-rouge">t</code>와 정확히 일치하는 순간 없이 <code class="language-plaintext highlighter-rouge">t</code>를 넘어가 버리는 경우가 있어 멈추지 않았다.
+그래서 순번을 세는 안쪽 반복문 내부에도 같은 조건을 넣어, 목표 개수를 채우는 즉시 빠져나오게 했다.</p>
+
+<p>이게 필요한 이유는 한 숫자가 <strong>여러 글자</strong>이기 때문이다.
+예를 들어 남은 개수가 1인데 이번 숫자가 두 글자라면, 안쪽에서 멈추지 않는 한 <code class="language-plaintext highlighter-rouge">t</code>를 건너뛴다.</p>
+
+<p><br /></p>
+
+<h3 id="순번-세기">순번 세기</h3>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">tmp</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">,</span> <span class="o">++</span><span class="n">order</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">order</span> <span class="o">&gt;</span> <span class="n">m</span><span class="p">)</span> <span class="n">order</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">order</span> <span class="o">==</span> <span class="n">p</span><span class="p">)</span> <span class="n">answer</span> <span class="o">+=</span> <span class="n">tmp</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">answer</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">==</span> <span class="n">t</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">order</code>는 지금이 몇 번째 사람 차례인지를 나타낸다. <code class="language-plaintext highlighter-rouge">m</code>을 넘으면 1로 되돌려 원형으로 순환시킨다.
+<code class="language-plaintext highlighter-rouge">order</code>를 반복문 바깥에 선언해 <strong>숫자가 바뀌어도 순번이 이어지게</strong> 한 것이 포인트다. 숫자마다 초기화하면 게임이 성립하지 않는다.</p>
+
+<p><br /></p>
+
+<h3 id="시간-복잡도">시간 복잡도</h3>
+
+<p>필요한 글자 수가 <code class="language-plaintext highlighter-rouge">t</code>(최대 1,000)이고, 최악의 경우 인원 <code class="language-plaintext highlighter-rouge">m</code>(최대 100) 명당 한 글자씩 건너뛰므로 대략 10만 글자 정도를 만들면 충분하다.
+숫자 하나를 변환하는 비용은 자릿수에 비례하므로 전체적으로 여유롭다.</p>
+
+<p><br /></p>
+
+<h3 id="풀이-코드">풀이 코드</h3>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;string&gt;
+#include &lt;vector&gt;
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="n">string</span> <span class="n">number</span> <span class="o">=</span> <span class="s">"0123456789"</span><span class="p">;</span>
+<span class="n">string</span> <span class="n">alphabat</span> <span class="o">=</span> <span class="s">"ABCDEF"</span><span class="p">;</span>
+
+<span class="n">string</span> <span class="nf">solution</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span> <span class="kt">int</span> <span class="n">t</span><span class="p">,</span> <span class="kt">int</span> <span class="n">m</span><span class="p">,</span> <span class="kt">int</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">string</span> <span class="n">answer</span> <span class="o">=</span> <span class="s">""</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">order</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">string</span> <span class="n">tmp</span> <span class="o">=</span> <span class="s">""</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">num</span> <span class="o">=</span> <span class="n">cnt</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="n">tmp</span> <span class="o">+=</span> <span class="s">"0"</span><span class="p">;</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">num</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">num</span> <span class="o">%</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">)</span> <span class="n">tmp</span> <span class="o">=</span> <span class="n">alphabat</span><span class="p">[</span><span class="n">num</span> <span class="o">%</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">10</span><span class="p">]</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">;</span>
+            <span class="k">else</span> <span class="n">tmp</span> <span class="o">=</span> <span class="n">number</span><span class="p">[</span><span class="n">num</span> <span class="o">%</span> <span class="n">n</span><span class="p">]</span> <span class="o">+</span> <span class="n">tmp</span><span class="p">;</span>
+            <span class="n">num</span> <span class="o">/=</span> <span class="n">n</span><span class="p">;</span>
+        <span class="p">}</span>
+        
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">tmp</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">,</span><span class="o">++</span><span class="n">order</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">order</span> <span class="o">&gt;</span> <span class="n">m</span><span class="p">)</span> <span class="n">order</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">order</span> <span class="o">==</span> <span class="n">p</span><span class="p">)</span> <span class="n">answer</span> <span class="o">+=</span> <span class="n">tmp</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">answer</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">==</span> <span class="n">t</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">answer</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">==</span> <span class="n">t</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+        <span class="o">++</span><span class="n">cnt</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">answer</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><br /></p>
+
+<h3 id="배운-점">배운 점</h3>
+
+<p>경계값(0)과 종료 조건에서 전부 막혔던 문제다.
+“한 항목이 여러 글자로 펼쳐지는” 구조에서는 <strong>바깥 반복문의 종료 조건만으로는 부족하다</strong>는 걸 확인했다.</p>
+
+<p><br /><br /></p>
+
+<h3 id="문제-출처">문제 출처</h3>
+<p><a href="https://programmers.co.kr/learn/courses/30/lessons/17687">프로그래머스 n진수 게임</a></p>
+:ET

@@ -1,0 +1,244 @@
+I"#<p>커밋 메시지 앞에 이모지를 붙여 <strong>어떤 성격의 변경인지 한눈에 보이게</strong> 하는 컨벤션을 깃모지(gitmoji)라고 한다.</p>
+
+<p>팀 프로젝트에서 커밋 로그를 훑을 때 <code class="language-plaintext highlighter-rouge">fix</code>, <code class="language-plaintext highlighter-rouge">feat</code> 같은 접두어보다 눈에 빨리 들어와서 쓰기 시작했는데, 매번 어떤 코드를 써야 하는지 찾아보게 돼서 자주 쓰는 것들을 정리해 뒀다.</p>
+
+<h3 id="쓰는-법">쓰는 법</h3>
+
+<p>커밋 메시지 맨 앞에 코드나 이모지를 붙이면 된다. 둘 다 동작한다.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git commit <span class="nt">-m</span> <span class="s2">":sparkles: 로그인 API 추가"</span>
+git commit <span class="nt">-m</span> <span class="s2">"✨ 로그인 API 추가"</span>
+</code></pre></div></div>
+
+<p>GitHub은 <code class="language-plaintext highlighter-rouge">:sparkles:</code> 형태의 코드를 자동으로 이모지로 바꿔 보여준다.
+터미널에서 로그를 볼 일이 많다면 이모지를 직접 넣는 쪽이 편하다.</p>
+
+<h3 id="정하고-갈-것">정하고 갈 것</h3>
+
+<p>팀에서 쓸 거라면 <strong>전체 목록을 다 쓰지 말고 10개 안쪽으로 추려서 규칙을 정하는 편</strong>이 낫다.
+종류가 많으면 결국 각자 다른 걸 골라서 붙이게 되고, 그러면 로그를 훑는다는 원래 목적이 사라진다.</p>
+
+<p>아래는 전체 목록이다.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>아이콘</th>
+      <th>코드</th>
+      <th>설명</th>
+      <th>원문</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>🎨</td>
+      <td>:art:</td>
+      <td>코드의 구조/형태 개선</td>
+      <td>Improve structure / format of the code.</td>
+    </tr>
+    <tr>
+      <td>⚡️</td>
+      <td>:zap:</td>
+      <td>성능 개선</td>
+      <td>Improve performance.</td>
+    </tr>
+    <tr>
+      <td>🔥</td>
+      <td>:fire:</td>
+      <td>코드/파일 삭제</td>
+      <td>Remove code or files.</td>
+    </tr>
+    <tr>
+      <td>🐛</td>
+      <td>:bug:</td>
+      <td>버그 수정</td>
+      <td>Fix a bug.</td>
+    </tr>
+    <tr>
+      <td>🚑</td>
+      <td>:ambulance:</td>
+      <td>긴급 수정</td>
+      <td>Critical hotfix.</td>
+    </tr>
+    <tr>
+      <td>✨</td>
+      <td>:sparkles:</td>
+      <td>새 기능</td>
+      <td>Introduce new features.</td>
+    </tr>
+    <tr>
+      <td>📝</td>
+      <td>:memo:</td>
+      <td>문서 추가/수정</td>
+      <td>Add or update documentation.</td>
+    </tr>
+    <tr>
+      <td>💄</td>
+      <td>:lipstick:</td>
+      <td>UI/스타일 파일 추가/수정</td>
+      <td>Add or update the UI and style files.</td>
+    </tr>
+    <tr>
+      <td>🎉</td>
+      <td>:tada:</td>
+      <td>프로젝트 시작</td>
+      <td>Begin a project.</td>
+    </tr>
+    <tr>
+      <td>✅</td>
+      <td>:white_check_mark:</td>
+      <td>테스트 추가/수정</td>
+      <td>Add or update tests.</td>
+    </tr>
+    <tr>
+      <td>🔒</td>
+      <td>:lock:</td>
+      <td>보안 이슈 수정</td>
+      <td>Fix security issues.</td>
+    </tr>
+    <tr>
+      <td>🔖</td>
+      <td>:bookmark:</td>
+      <td>릴리즈/버전 태그</td>
+      <td>Release / Version tags.</td>
+    </tr>
+    <tr>
+      <td>💚</td>
+      <td>:green_heart:</td>
+      <td>CI 빌드 수정</td>
+      <td>Fix CI Build.</td>
+    </tr>
+    <tr>
+      <td>📌</td>
+      <td>:pushpin:</td>
+      <td>특정 버전 의존성 고정</td>
+      <td>Pin dependencies to specific versions.</td>
+    </tr>
+    <tr>
+      <td>👷</td>
+      <td>:construction_worker:</td>
+      <td>CI 빌드 시스템 추가/수정</td>
+      <td>Add or update CI build system.</td>
+    </tr>
+    <tr>
+      <td>📈</td>
+      <td>:chart_with_upwards_trend:</td>
+      <td>분석, 추적 코드 추가/수정</td>
+      <td>Add or update analytics or track code.</td>
+    </tr>
+    <tr>
+      <td>♻️</td>
+      <td>:recycle:</td>
+      <td>코드 리팩토링</td>
+      <td>Refactor code.</td>
+    </tr>
+    <tr>
+      <td>➕</td>
+      <td>:heavy_plus_sign:</td>
+      <td>의존성 추가</td>
+      <td>Add a dependency.</td>
+    </tr>
+    <tr>
+      <td>➖</td>
+      <td>:heavy_minus_sign:</td>
+      <td>의존성 제거</td>
+      <td>Remove a dependency.</td>
+    </tr>
+    <tr>
+      <td>🔧</td>
+      <td>:wrench:</td>
+      <td>구성 파일 추가/삭제</td>
+      <td>Add or update configuration files.</td>
+    </tr>
+    <tr>
+      <td>🔨</td>
+      <td>:hammer:</td>
+      <td>개발 스크립트 추가/수정</td>
+      <td>Add or update development scripts.</td>
+    </tr>
+    <tr>
+      <td>🌐</td>
+      <td>:globe_with_meridians:</td>
+      <td>국제화/현지화</td>
+      <td>Internationalization and localization.</td>
+    </tr>
+    <tr>
+      <td>💩</td>
+      <td>:poop:</td>
+      <td>똥싼 코드</td>
+      <td>Write bad code that needs to be improved.</td>
+    </tr>
+    <tr>
+      <td>⏪</td>
+      <td>:rewind:</td>
+      <td>변경 내용 되돌리기</td>
+      <td>Revert changes.</td>
+    </tr>
+    <tr>
+      <td>🔀</td>
+      <td>:twisted_rightwards_arrows:</td>
+      <td>브랜치 합병</td>
+      <td>Merge branches.</td>
+    </tr>
+    <tr>
+      <td>📦</td>
+      <td>:package:</td>
+      <td>컴파일된 파일 추가/수정</td>
+      <td>Add or update compiled files or packages.</td>
+    </tr>
+    <tr>
+      <td>👽</td>
+      <td>:alien:</td>
+      <td>외부 API 변화로 인한 수정</td>
+      <td>Update code due to external API changes.</td>
+    </tr>
+    <tr>
+      <td>🚚</td>
+      <td>:truck:</td>
+      <td>리소스 이동, 이름 변경</td>
+      <td>Move or rename resources (e.g.: files paths routes).</td>
+    </tr>
+    <tr>
+      <td>📄</td>
+      <td>:page_facing_up:</td>
+      <td>라이센스 추가/수정</td>
+      <td>Add or update license.</td>
+    </tr>
+    <tr>
+      <td>💡</td>
+      <td>:bulb:</td>
+      <td>주석 추가/수정</td>
+      <td>Add or update comments in source code.</td>
+    </tr>
+    <tr>
+      <td>🍻</td>
+      <td>:beers:</td>
+      <td>술 취해서 쓴 코드</td>
+      <td>Write code drunkenly.</td>
+    </tr>
+    <tr>
+      <td>🗃</td>
+      <td>:card_file_box:</td>
+      <td>데이버베이스 관련 수정</td>
+      <td>Perform database related changes.</td>
+    </tr>
+    <tr>
+      <td>🔊</td>
+      <td>:loud_sound:</td>
+      <td>로그 추가/수정</td>
+      <td>Add or update logs.</td>
+    </tr>
+    <tr>
+      <td>🙈</td>
+      <td>:see_no_evil:</td>
+      <td>.gitignore 추가/수정</td>
+      <td>Add or update a .gitignore file.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="참고">참고</h3>
+
+<p>이 목록은 <a href="https://gitmoji.dev/">gitmoji.dev</a>에 정리된 공식 목록을 옮기고 설명을 우리말로 붙인 것이다.
+원본은 <a href="https://github.com/carloscuesta/gitmoji">carloscuesta/gitmoji</a> 저장소에서 관리되고 있고, 새 항목이 계속 추가되므로 최신 목록은 원본을 확인하는 게 정확하다.</p>
+:ET

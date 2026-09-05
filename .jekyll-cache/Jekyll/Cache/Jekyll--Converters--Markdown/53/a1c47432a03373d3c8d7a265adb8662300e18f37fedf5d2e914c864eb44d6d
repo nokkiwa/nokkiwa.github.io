@@ -1,0 +1,138 @@
+I"1<p>여러 URL이 살아 있는지 확인하는 프로그램을 만들어보면서, Go가 왜 동시성으로 이름이 났는지를 체감할 수 있었다.
+같은 일을 싱글 스레드로 한 번, goroutine으로 한 번 짜서 비교해봤다.</p>
+
+<p><br /></p>
+
+<h2 id="싱글-스레드-방식">싱글 스레드 방식</h2>
+
+<p>아래 코드는 싱글 스레드를 이용한 방식으로 시간이 많이 걸린다. 파이썬과 같은 방식이라고 보면 된다.</p>
+
+<p>URL 9개를 <code class="language-plaintext highlighter-rouge">for</code>문으로 하나씩 돌면서 <code class="language-plaintext highlighter-rouge">http.Get</code>을 호출한다.
+문제는 <code class="language-plaintext highlighter-rouge">http.Get</code>이 <strong>응답이 올 때까지 그 자리에서 멈춰 있는다</strong>는 점이다.
+한 요청에 1초가 걸린다면 9개를 확인하는 데 9초가 걸린다. 대기 시간이 그대로 쌓인다.</p>
+
+<p>네트워크 요청은 CPU가 일하는 게 아니라 <strong>응답을 기다리는</strong> 시간이 대부분이라, 이 대기를 겹치게만 해도 전체 시간이 크게 줄어든다.</p>
+
+<p><br /></p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+	<span class="s">"errors"</span>
+	<span class="s">"fmt"</span>
+	<span class="s">"net/http"</span>
+<span class="p">)</span>
+
+<span class="k">var</span> <span class="n">errRequestFailed</span> <span class="o">=</span> <span class="n">errors</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="s">"Requset failed"</span><span class="p">)</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">var</span> <span class="n">results</span> <span class="o">=</span> <span class="nb">make</span><span class="p">(</span><span class="k">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span><span class="p">)</span>       <span class="c">//make는 빈 map을 만들어줌, 혹은 var results = map[string]string{} 으로도 가능</span>
+	<span class="n">urls</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span>
+		<span class="s">"https://www.airbnb.com/"</span><span class="p">,</span>
+		<span class="s">"https://www.google.com/"</span><span class="p">,</span>
+		<span class="s">"https://www.amazon.com/"</span><span class="p">,</span>
+		<span class="s">"https://www.reddit.com/"</span><span class="p">,</span>
+		<span class="s">"https://www.google.com/"</span><span class="p">,</span>
+		<span class="s">"https://soundcloud.com/"</span><span class="p">,</span>
+		<span class="s">"https://www.facebook.com/"</span><span class="p">,</span>
+		<span class="s">"https://www.instagram.com/"</span><span class="p">,</span>
+		<span class="s">"https://academy.nomadcoders.co/"</span><span class="p">,</span>
+	<span class="p">}</span>
+	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">url</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">urls</span> <span class="p">{</span>
+		<span class="n">result</span> <span class="o">:=</span> <span class="s">"OK"</span>
+		<span class="n">err</span> <span class="o">:=</span> <span class="n">hitURL</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>     <span class="c">//에러 발견</span>
+			<span class="n">result</span> <span class="o">=</span> <span class="s">"FAILED"</span>
+		<span class="p">}</span>
+		<span class="n">results</span><span class="p">[</span><span class="n">url</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+	<span class="p">}</span>
+	<span class="k">for</span> <span class="n">url</span><span class="p">,</span> <span class="n">result</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">results</span> <span class="p">{</span>
+		<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">hitURL</span><span class="p">(</span><span class="n">url</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"Checking:"</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+	<span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">http</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="o">||</span> <span class="n">resp</span><span class="o">.</span><span class="n">StatusCode</span> <span class="o">&gt;=</span> <span class="m">400</span> <span class="p">{</span>
+		<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">resp</span><span class="o">.</span><span class="n">StatusCode</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">errRequestFailed</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="no">nil</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p><br /></p>
+
+<h2 id="goroutines">Goroutines</h2>
+
+<p>goroutine은 함수 호출 앞에 <strong><code class="language-plaintext highlighter-rouge">go</code> 한 단어만 붙이면</strong> 그 함수가 별도의 흐름에서 실행되는 방식이다.
+싱글 스레드로 순차 실행되던 것을 여러 흐름으로 나눠준다고 보면 된다.</p>
+
+<p><img src="/public/img/goroutine.png" alt="" /></p>
+
+<p>OS 스레드를 직접 만드는 게 아니라 Go 런타임이 관리하는 가벼운 실행 단위라, 수천 개를 만들어도 부담이 적은 것이 특징이다.</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+	<span class="s">"fmt"</span>
+	<span class="s">"time"</span>
+<span class="p">)</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">go</span> <span class="n">sexyCount</span><span class="p">(</span><span class="s">"nico"</span><span class="p">)</span> <span class="c">//goroutines는 main 함수가 작동하는 동안만 유효</span>
+	<span class="k">go</span> <span class="n">sexyCount</span><span class="p">(</span><span class="s">"flynn"</span><span class="p">)</span>
+	<span class="n">time</span><span class="o">.</span><span class="n">Sleep</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">Second</span> <span class="o">*</span> <span class="m">5</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">sexyCount</span><span class="p">(</span><span class="n">person</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="m">10</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">person</span><span class="p">,</span> <span class="s">"is sexy"</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+		<span class="n">time</span><span class="o">.</span><span class="n">Sleep</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">Second</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+<h3 id="main이-끝나면-전부-사라진다">main이 끝나면 전부 사라진다</h3>
+
+<p>위 코드에서 <code class="language-plaintext highlighter-rouge">time.Sleep(time.Second * 5)</code>가 없으면 아무것도 출력되지 않는다.</p>
+
+<p>goroutine은 <strong>main 함수가 살아 있는 동안만 유효하기</strong> 때문이다.
+<code class="language-plaintext highlighter-rouge">go sexyCount(...)</code>는 “이 함수를 시작해 두고 다음 줄로 넘어가라”는 뜻이라, main이 바로 끝나버리면 시작된 goroutine도 같이 사라진다.</p>
+
+<p>여기서는 5초를 재워서 시간을 벌었는데, 이건 어디까지나 확인용이다.
+실제로는 얼마나 걸릴지 모르는 작업을 <code class="language-plaintext highlighter-rouge">Sleep</code>으로 기다릴 수 없으니, <strong>채널(channel)</strong> 로 “끝났다”는 신호를 받아야 한다.</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">c</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="k">chan</span> <span class="kt">string</span><span class="p">)</span>
+	<span class="n">urls</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span> <span class="c">/* ... */</span> <span class="p">}</span>
+
+	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">url</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">urls</span> <span class="p">{</span>
+		<span class="k">go</span> <span class="n">hitURL</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>      <span class="c">// 전부 동시에 시작</span>
+	<span class="p">}</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">urls</span><span class="p">);</span> <span class="n">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="o">&lt;-</span><span class="n">c</span><span class="p">)</span>       <span class="c">// 완료된 것부터 하나씩 받는다</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">&lt;-c</code>는 채널에 값이 들어올 때까지 기다린다.
+URL 개수만큼 받으면 모든 goroutine이 끝났다는 뜻이므로, <code class="language-plaintext highlighter-rouge">Sleep</code>처럼 시간을 찍어두지 않아도 된다.</p>
+
+<p>이렇게 하면 9개 요청이 동시에 나가므로 전체 시간이 <strong>가장 느린 요청 하나</strong> 수준으로 줄어든다.</p>
+
+<p><br /></p>
+
+<h3 id="정리하며">정리하며</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">go</code> 키워드 하나로 함수를 별도 흐름에서 돌릴 수 있다</li>
+  <li>goroutine은 main보다 오래 살지 못한다</li>
+  <li>결과를 모으거나 완료를 기다릴 때는 <code class="language-plaintext highlighter-rouge">Sleep</code>이 아니라 채널을 쓴다</li>
+</ul>
+
+<p>병렬 처리를 이렇게 쉽게 표현할 수 있다는 점이 Go의 장점인 것 같다.
+다만 쉬운 만큼 “언제 끝나는지”를 관리하지 않으면 결과가 통째로 사라져서, 채널을 같이 익혀야 실제로 쓸 수 있는 도구가 된다.</p>
+:ET

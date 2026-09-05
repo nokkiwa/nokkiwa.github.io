@@ -1,0 +1,73 @@
+I"�<p>웹소켓 기반 채팅을 붙이면서, 메시지 브로커로 RabbitMQ를 외부 서버 도커에 올리고 스프링부트와 연결을 시도했는데 연결이 계속 실패했다.</p>
+
+<p>애플리케이션 로그에는 브로커에 연결하지 못했다는 메시지만 반복해서 찍혔다.
+설정값(호스트, 포트, 계정)을 몇 번씩 확인해도 틀린 곳이 없어서 한참 헤맸는데, 결론부터 말하면 <strong>스프링 쪽이 아니라 RabbitMQ 쪽 설정 문제</strong>였다.</p>
+
+<h3 id="어떤-구조인가">어떤 구조인가</h3>
+
+<p><code class="language-plaintext highlighter-rouge">enableStompBrokerRelay</code>는 스프링이 직접 메시지를 중계하지 않고, <strong>외부 브로커에 STOMP 프로토콜로 넘기는</strong> 방식이다.
+그래서 RabbitMQ가 STOMP를 알아들을 수 있어야 하는데, RabbitMQ는 기본적으로 AMQP만 켜져 있고 STOMP는 <strong>플러그인으로 따로 활성화</strong>해야 한다.</p>
+
+<p>포트 <code class="language-plaintext highlighter-rouge">61613</code>도 STOMP 플러그인이 켜져 있을 때 열리는 포트다. 플러그인이 꺼져 있으면 그 포트로 연결 자체가 안 된다.</p>
+
+<p><code class="language-plaintext highlighter-rouge">config</code> 설정은 아래와 같이 해주었었다.</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Slf4j</span>
+<span class="nd">@Configuration</span>
+<span class="nd">@EnableWebSocketMessageBroker</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">StompConfig</span> <span class="kd">implements</span> <span class="nc">WebSocketMessageBrokerConfigurer</span> <span class="o">{</span>
+    <span class="nd">@Value</span><span class="o">(</span><span class="s">"${host}"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="nc">Host</span><span class="o">;</span>
+    <span class="nd">@Value</span><span class="o">(</span><span class="s">"${relayPort}"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">relayPort</span><span class="o">;</span>
+    <span class="nd">@Value</span><span class="o">(</span><span class="s">"${clientId}"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">clientId</span><span class="o">;</span>
+    <span class="nd">@Value</span><span class="o">(</span><span class="s">"${clientPw}"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">clientPw</span><span class="o">;</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">configureMessageBroker</span><span class="o">(</span><span class="nc">MessageBrokerRegistry</span> <span class="n">registry</span><span class="o">){</span>
+        <span class="n">registry</span><span class="o">.</span><span class="na">setApplicationDestinationPrefixes</span><span class="o">(</span><span class="s">"/pub"</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">enableStompBrokerRelay</span><span class="o">(</span><span class="s">"/topic"</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">setRelayHost</span><span class="o">(</span><span class="nc">Host</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">setVirtualHost</span><span class="o">(</span><span class="s">"/"</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">setRelayPort</span><span class="o">(</span><span class="n">relayPort</span><span class="o">)</span>		<span class="c1">// 61613</span>
+                <span class="o">.</span><span class="na">setClientLogin</span><span class="o">(</span><span class="n">clientId</span><span class="o">)</span>		<span class="c1">// guest</span>
+                <span class="o">.</span><span class="na">setClientPasscode</span><span class="o">(</span><span class="n">clientPw</span><span class="o">);</span>	<span class="c1">// guest</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">registerStompEndpoints</span><span class="o">(</span><span class="nc">StompEndpointRegistry</span> <span class="n">registry</span><span class="o">){</span>
+        <span class="n">registry</span><span class="o">.</span><span class="na">addEndpoint</span><span class="o">(</span><span class="s">"/ws"</span><span class="o">).</span><span class="na">setAllowedOriginPatterns</span><span class="o">(</span><span class="s">"*"</span><span class="o">).</span><span class="na">withSockJS</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="원인과-해결">원인과 해결</h3>
+
+<p>이유는 도커에 올린 RabbitMQ에서 <strong>web stomp 플러그인 설정을 해주지 않아서</strong>였다.</p>
+
+<p>컨테이너에 들어가 플러그인을 켜고 재시작해주면 연결된다. 아래 명령어를 차례로 입력하면 된다.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># docker exec -it &lt;rabbitMQ 컨테이너&gt; /bin/bash
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># rabbitmq-plugins enable rabbitmq_web_stomp
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># rabbitmqctl stop
+# rabbitmqctl start_app
+# rabbitmqctl status
+</code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">rabbitmqctl status</code>의 출력에서 <code class="language-plaintext highlighter-rouge">rabbitmq_web_stomp</code>가 실행 중인 플러그인 목록에 들어 있으면 정상이다.</p>
+
+<h3 id="확인해볼-순서">확인해볼 순서</h3>
+
+<p>같은 증상을 다시 만난다면 이 순서로 좁히는 게 빨랐을 것 같다.</p>
+
+<ol>
+  <li><strong>포트가 열려 있나</strong> — 브로커 서버에서 <code class="language-plaintext highlighter-rouge">61613</code> 포트가 LISTEN 상태인지 확인한다. 안 열려 있으면 플러그인 문제다.</li>
+  <li><strong>플러그인이 켜져 있나</strong> — <code class="language-plaintext highlighter-rouge">rabbitmq-plugins list</code>로 확인한다.</li>
+  <li><strong>도커 포트 매핑이 되어 있나</strong> — 컨테이너를 띄울 때 <code class="language-plaintext highlighter-rouge">-p 61613:61613</code>을 빠뜨리면 플러그인을 켜도 밖에서 접근할 수 없다.</li>
+  <li><strong>계정 권한이 맞나</strong> — 기본 <code class="language-plaintext highlighter-rouge">guest</code> 계정은 보안상 <strong>localhost에서만</strong> 접속이 허용된다. 외부 서버에 올렸다면 별도 계정을 만들어야 한다.</li>
+</ol>
+
+<p>설정값을 아무리 봐도 안 될 때는 <strong>연결을 받는 쪽이 그 프로토콜을 지원하는지</strong>부터 확인하는 게 순서라는 걸 배웠다.</p>
+:ET

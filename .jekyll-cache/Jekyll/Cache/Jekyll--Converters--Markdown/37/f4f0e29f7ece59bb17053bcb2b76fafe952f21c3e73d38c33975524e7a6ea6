@@ -1,0 +1,49 @@
+I"�<p>기존에는 aws의 elb를 사용하여 https 설정을 해주었었는데 생각보다 비용이 나와서 깜짝 놀랐었다…. 그래서 EC2내에서 인증서를 발급받아 적용하는 방식으로 바꿔주었다. 아래는 그 과정이다.</p>
+
+<h2 id="1-도메인-발급">1. 도메인 발급</h2>
+<p>https://www.freenom.com/en/index.html?lang=en
+위 사이트를 통해 무료 도메인을 발급받고 자신의 EC2 Ip에 적용시킨다.</p>
+
+<h2 id="2-인증서-요청-및-발급">2. 인증서 요청 및 발급</h2>
+<p>Certbot을 이용해 Let’s Encrypt 인증서를 발급해준다. 아래 명령어를 차례대로 실행하여 Certbot을 설치해준다.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo apt-get update
+sudo apt-get install software-properties-common
+sudo add-apt-repository ppa:certbot/certbot
+sudo apt-get update
+sudo apt-get install certbot
+</code></pre></div></div>
+
+<p>그 후 standalone 방식으로 인증 요청을 한다.
+<code class="language-plaintext highlighter-rouge">sudo certbot certonly –-standalone -d 도메인 이름</code>
+요청 후 두개의 pem 파일을 발급 받을 것이다.</p>
+
+<h2 id="3-인증서-등록">3. 인증서 등록</h2>
+<p>발급받은 인증서를 등록하기 위해 <code class="language-plaintext highlighter-rouge">/etc/nginx/sites-enabled</code>로 이동한 후 아래 명령어를 실행한다.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo rm default
+sudo nano 도메인이름.conf    # 파일 이름은 도메인 이름이 아니어도 된다. 햇갈리지 않기 위해 해주었다.
+</code></pre></div></div>
+<p>파일 내용을 아래 내용으로 채워준다. 스프링부트가 8081 포트에서 실행되기 때문에 80 -&gt; 443 -&gt; 8081 redirect를 해주었다.</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">server</span> <span class="p">{</span>
+        <span class="n">listen</span> <span class="mi">80</span><span class="p">;</span>
+        <span class="n">listen</span> <span class="p">[</span><span class="o">::</span><span class="p">]</span><span class="o">:</span><span class="mi">80</span><span class="p">;</span>
+
+        <span class="n">location</span> <span class="o">/</span> <span class="p">{</span>
+                <span class="n">proxy_pass</span> <span class="n">https</span><span class="o">:</span><span class="c1">//127.0.0.1;</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">server</span> <span class="p">{</span>
+        <span class="n">listen</span> <span class="mi">443</span><span class="p">;</span>
+
+        <span class="n">location</span> <span class="o">/</span> <span class="p">{</span>
+                <span class="n">proxy_pass</span> <span class="n">http</span><span class="o">:</span><span class="c1">//127.0.0.1:8081;</span>
+        <span class="p">}</span>
+
+        <span class="n">ssl</span> <span class="n">on</span><span class="p">;</span>
+        <span class="n">ssl_certificate</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">letsencrypt</span><span class="o">/</span><span class="n">live</span><span class="o">/</span><span class="n">yose</span><span class="p">.</span><span class="n">ml</span><span class="o">/</span><span class="n">fullchain</span><span class="p">.</span><span class="n">pem</span><span class="p">;</span>
+        <span class="n">ssl_certificate_key</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">letsencrypt</span><span class="o">/</span><span class="n">live</span><span class="o">/</span><span class="n">yose</span><span class="p">.</span><span class="n">ml</span><span class="o">/</span><span class="n">privkey</span><span class="p">.</span><span class="n">pem</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>끝 !!</p>
+:ET

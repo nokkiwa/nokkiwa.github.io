@@ -1,0 +1,104 @@
+I"�<p>우분투 22.04에 도커를 설치하고 실행했더니 서비스가 아예 뜨지 않았다.
+재설치를 몇 시간 반복해도 같은 오류가 나와서, 결국 <strong>찌꺼기까지 전부 지우고 다시 설치</strong>해서야 해결됐다. 그 과정을 남겨둔다.</p>
+
+<h3 id="증상">증상</h3>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Job <span class="k">for </span>docker.service failed because the control process exited with error code.
+See <span class="s2">"systemctl status docker.service"</span> and <span class="s2">"journalctl -xe"</span> <span class="k">for </span>details.
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">systemctl status docker</code>를 통해 도커 상태를 보니 아래와 같은 오류가 있었다</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker.service: Start request repeated too quickly.
+docker.service: Failed with result <span class="s1">'exit-code'</span><span class="nb">.</span>
+Failed to start Docker Application Container Engine.
+</code></pre></div></div>
+<p><br /></p>
+
+<h3 id="오류-메시지-읽기">오류 메시지 읽기</h3>
+
+<p><code class="language-plaintext highlighter-rouge">Start request repeated too quickly</code>는 그 자체가 원인이 아니다.
+systemd는 서비스가 죽으면 자동으로 재시작하는데, <strong>짧은 시간에 너무 여러 번 실패하면 재시도를 포기하고</strong> 이 메시지를 낸다.</p>
+
+<p>즉 “도커가 계속 죽고 있다”는 결과만 알려줄 뿐, 왜 죽는지는 안 나온다. 진짜 원인은 다른 곳에서 찾아야 한다.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>journalctl <span class="nt">-u</span> docker.service <span class="nt">-n</span> 50 <span class="nt">--no-pager</span>
+</code></pre></div></div>
+
+<p>데몬이 남긴 실제 로그는 여기에 있다. 나는 설치 과정에서 데몬 설정이 꼬인 것으로 판단했다.</p>
+
+<h3 id="완전히-지우고-다시-설치하기">완전히 지우고 다시 설치하기</h3>
+
+<p>도커를 제거하고 다시 설치하려고 했는데, 몇 시간 동안 재설치를 반복해도 같은 오류가 계속 나왔다.</p>
+
+<p><code class="language-plaintext highlighter-rouge">apt remove</code>만으로는 <strong>설정 파일과 데이터 디렉터리가 남기 때문</strong>이었다.
+재설치를 해도 망가진 설정을 그대로 다시 읽어서 똑같이 죽는 것이다. 있는 대로 다 삭제하고 다시 설치하니 잘 실행되었다.</p>
+
+<p>아래는 그 과정이다. 참고로 나는 우분투 22.04를 사용 중이다.</p>
+
+<blockquote>
+  <p><strong>주의</strong>
+<code class="language-plaintext highlighter-rouge">/var/lib/docker</code>를 지우면 <strong>이미지·컨테이너·볼륨이 전부 사라진다.</strong>
+살려야 할 데이터가 있다면 먼저 백업하고 진행해야 한다. 이제 막 설치한 서버가 아니라면 특히 조심할 것.</p>
+</blockquote>
+
+<p><br />
+먼저 도커 관련 데몬들을 멈춘다.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>systemctl stop docker.socket
+<span class="nb">sudo </span>systemctl disable docker.socket
+<span class="nb">sudo </span>systemctl stop docker.service
+</code></pre></div></div>
+<p>다음으로 도커 관련된 모든 패키지들을 제거해준다.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dpkg <span class="nt">-l</span> | <span class="nb">grep</span> <span class="nt">-i</span> docker 
+</code></pre></div></div>
+<p>도커 관련 패키지들을 위 명령어로 찾아준다.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt-get purge <span class="nt">-y</span> &lt;package_name&gt;
+</code></pre></div></div>
+<p>찾은 패키지들을 모두 위 명령어로 제거해준다.</p>
+
+<p><br />
+그리고 아래 명령어들을 차례대로 실행한다.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo rm</span> <span class="nt">-rf</span> /var/lib/docker<span class="k">*</span> /etc/docker<span class="k">*</span>
+<span class="nb">sudo rm</span> <span class="nt">-rf</span> /var/run/docker.sock /var/run/dockershim.sock /var/run/docker.pid
+<span class="nb">sudo rm</span> <span class="nt">-rf</span> /var/lib/dockershim /var/run/docker /var/run/dockershim.sock
+<span class="nb">sudo </span>apt purge docker-ce docker-ce-cli containerd.io
+</code></pre></div></div>
+
+<p><br />
+아래 명령어들을 차례대로 실행해 도커를 설치해준다. (우분투 22.04 기준)</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt-get update
+<span class="nb">sudo </span>apt-get <span class="nb">install </span>apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+curl <span class="nt">-fsSL</span> https://download.docker.com/linux/ubuntu/gpg | <span class="nb">sudo </span>apt-key add -
+<span class="nb">sudo </span>add-apt-repository <span class="s2">"deb [arch=amd64] https://download.docker.com/linux/ubuntu </span><span class="si">$(</span>lsb_release <span class="nt">-cs</span><span class="si">)</span><span class="s2"> stable"</span>
+<span class="nb">sudo </span>apt-get update
+<span class="nb">sudo </span>apt-get <span class="nb">install </span>docker-ce docker-ce-cli containerd.io
+</code></pre></div></div>
+
+<p><br /></p>
+
+<p>설치가 끝나면 상태를 확인한다.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>systemctl status docker
+<span class="nb">sudo </span>docker run hello-world
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">hello-world</code>가 정상 출력되면 데몬과 런타임이 모두 살아 있다는 뜻이다.</p>
+
+<h3 id="정리">정리</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Start request repeated too quickly</code>는 <strong>원인이 아니라 결과</strong>다. <code class="language-plaintext highlighter-rouge">journalctl</code>로 진짜 로그를 봐야 한다.</li>
+  <li>재설치가 안 먹히면 <code class="language-plaintext highlighter-rouge">apt remove</code>가 아니라 <strong>설정·데이터까지 남아 있는지</strong>를 의심한다.</li>
+  <li>지우기 전에 <code class="language-plaintext highlighter-rouge">/var/lib/docker</code>에 살릴 데이터가 있는지 먼저 확인한다.</li>
+</ul>
+
+<p>같은 명령을 반복하는데 결과가 똑같다면, 명령이 잘못된 게 아니라 <strong>지워졌다고 생각한 무언가가 남아 있는</strong> 경우가 많다는 걸 배웠다.</p>
+
+<blockquote>
+  <p><strong>참고</strong>
+위 설치 명령에 있는 <code class="language-plaintext highlighter-rouge">apt-key add</code>는 현재 권장되지 않는 방식이다.
+지금은 <code class="language-plaintext highlighter-rouge">/etc/apt/keyrings/</code>에 GPG 키를 두고 저장소 항목에서 <code class="language-plaintext highlighter-rouge">signed-by</code>로 지정하는 방식이 도커 공식 문서의 안내다.</p>
+</blockquote>
+:ET

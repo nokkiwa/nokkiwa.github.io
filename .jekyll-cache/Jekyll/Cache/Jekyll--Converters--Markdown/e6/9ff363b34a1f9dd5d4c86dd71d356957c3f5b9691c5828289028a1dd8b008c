@@ -1,0 +1,150 @@
+I"�0<h3 id="if-with-a-twist">If with a Twist</h3>
+<p>go언어도 if-else 사용이 가능하다. <strong>주의할 점은 괄호가 반드시 있어야 컴파일이 된다.</strong></p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+	<span class="s">"fmt"</span>
+<span class="p">)</span>
+
+<span class="k">func</span> <span class="n">canIDrink</span><span class="p">(</span><span class="n">age</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="n">koreanAge</span> <span class="o">:=</span> <span class="n">age</span> <span class="o">+</span> <span class="m">2</span><span class="p">;</span> <span class="n">koreanAge</span> <span class="o">&lt;</span> <span class="m">18</span> <span class="p">{</span>       <span class="c">//if문 내에서 변수 선언이 가능</span>
+		<span class="k">return</span> <span class="no">false</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="no">true</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">canIDrink</span><span class="p">(</span><span class="m">16</span><span class="p">))</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h3 id="switch">Switch</h3>
+<p>go언어도 switch 사용이 가능하다.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+	<span class="s">"fmt"</span>
+<span class="p">)</span>
+
+<span class="k">func</span> <span class="n">canIDrink</span><span class="p">(</span><span class="n">age</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+	<span class="k">switch</span> <span class="n">koreanAge</span> <span class="o">:=</span> <span class="n">age</span> <span class="o">+</span> <span class="m">2</span><span class="p">;</span> <span class="n">koreanAge</span> <span class="p">{</span>        <span class="c">//switch문 내에서 변수 선언 가능</span>
+	<span class="k">case</span> <span class="m">10</span><span class="o">:</span>
+		<span class="k">return</span> <span class="no">false</span>
+	<span class="k">case</span> <span class="m">18</span><span class="o">:</span>
+		<span class="k">return</span> <span class="no">true</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="no">false</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">canIDrink</span><span class="p">(</span><span class="m">16</span><span class="p">))</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+<p>아래 방식으로도 switch를 사용할 수 있다.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+	<span class="s">"fmt"</span>
+<span class="p">)</span>
+
+<span class="k">func</span> <span class="n">canIDrink</span><span class="p">(</span><span class="n">age</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+	<span class="k">switch</span> <span class="p">{</span>
+	<span class="k">case</span> <span class="n">age</span> <span class="o">&lt;</span> <span class="m">18</span><span class="o">:</span>
+		<span class="k">return</span> <span class="no">false</span>
+	<span class="k">case</span> <span class="n">age</span> <span class="o">==</span> <span class="m">18</span><span class="o">:</span>
+		<span class="k">return</span> <span class="no">true</span>
+	<span class="k">case</span> <span class="n">age</span> <span class="o">&gt;</span> <span class="m">50</span><span class="o">:</span>
+		<span class="k">return</span> <span class="no">false</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="no">false</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">canIDrink</span><span class="p">(</span><span class="m">16</span><span class="p">))</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h3 id="pointers">Pointers!</h3>
+<p>포인터를 사용하는 방식은 C++과 유사하지만 조금 다르다. Low-level Programming이 가능하다.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="s">"fmt"</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">a</span> <span class="o">:=</span> <span class="m">2</span>
+	<span class="n">b</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="n">a</span>         <span class="c">//b에 a의 주소를 저장</span>
+	<span class="o">*</span><span class="n">b</span> <span class="o">=</span> <span class="m">20</span>         <span class="c">//b에 저장된 주소에 해당하는 메모리, 즉 a에 20 저장</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>  <span class="c">//20을 출력</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h3 id="arrays-and-slices">Arrays and Slices</h3>
+<p>배열을 선언하는 방법은 다른 언어와 같다.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="s">"fmt"</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">names</span> <span class="o">:=</span> <span class="p">[</span><span class="m">5</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span><span class="s">"nico"</span><span class="p">,</span> <span class="s">"lynn"</span><span class="p">,</span> <span class="s">"dal"</span><span class="p">}</span>
+	<span class="n">names</span><span class="p">[</span><span class="m">3</span><span class="p">]</span> <span class="o">=</span> <span class="s">"alala"</span>
+	<span class="n">names</span><span class="p">[</span><span class="m">4</span><span class="p">]</span> <span class="o">=</span> <span class="s">"alala"</span>
+	<span class="n">names</span><span class="p">[</span><span class="m">5</span><span class="p">]</span> <span class="o">=</span> <span class="s">"alala"</span>      <span class="c">//이부분에서 범위 밖을 참조하여 오류가 남</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+<p>go언어에는 C#의 Arraylist와 유사한 Slice가 있다. Slice는 배열의 크기를 선언하지 않고 Arraylist처럼 유동적으로 값을 추가하고 뺄 수 있다.<br />
+추가를 할때는 append를 사용하며 값을 추가한 새로운 Slice를 리턴한다. <strong>자주 사용되는 기능이다.</strong></p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="s">"fmt"</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">names</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">(</span><span class="s">"nico"</span><span class="p">,</span> <span class="s">"lynn"</span><span class="p">,</span> <span class="s">"dal"</span><span class="p">)</span>
+	<span class="n">names</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s">"flynn"</span><span class="p">)</span>      <span class="c">//값을 추가한 새로운 Slice를 리턴함</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h3 id="maps">Maps</h3>
+<p>go언어도 map 사용이 가능하다. <code class="language-plaintext highlighter-rouge">data := map[key]value{"key": value}</code></p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="s">"fmt"</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">nico</span> <span class="o">:=</span> <span class="k">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span><span class="s">"name"</span><span class="o">:</span> <span class="s">"nico"</span><span class="p">,</span> <span class="s">"age"</span><span class="o">:</span> <span class="s">"12"</span><span class="p">}</span>      <span class="c">//"key" : value</span>
+	<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">_</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">nico</span> <span class="p">{</span>
+		<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h3 id="structs">Structs</h3>
+<p>class와 object를 합친 듯한 struct를 go언어에서도 사용이 가능하다.  struct는 python의 <code class="language-plaintext highlighter-rouge">__init__</code>과 같은 생성자가 없다.</p>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="s">"fmt"</span>
+
+<span class="k">type</span> <span class="n">person</span> <span class="k">struct</span> <span class="p">{</span>            <span class="c">//struct 선언</span>
+	<span class="n">name</span>    <span class="kt">string</span>
+	<span class="n">age</span>     <span class="kt">int</span>
+	<span class="n">favFood</span> <span class="p">[]</span><span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">favFood</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">"kimchi"</span><span class="p">,</span> <span class="s">"ramen"</span><span class="p">}</span>
+	<span class="n">nico</span> <span class="o">:=</span> <span class="n">person</span><span class="p">{</span><span class="n">name</span><span class="o">:</span> <span class="s">"nico"</span><span class="p">,</span> <span class="n">age</span><span class="o">:</span> <span class="m">18</span><span class="p">,</span> <span class="n">favFood</span><span class="o">:</span> <span class="n">favFood</span><span class="p">}</span>       <span class="c">//선언 시 var: value로 해주는게 좋음</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">nico</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p><br /><br /><br /><br /><br /><br /><br /><br /></p>
+:ET

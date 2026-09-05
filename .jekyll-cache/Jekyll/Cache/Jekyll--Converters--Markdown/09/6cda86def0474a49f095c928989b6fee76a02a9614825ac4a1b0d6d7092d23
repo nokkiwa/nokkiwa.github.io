@@ -1,0 +1,155 @@
+I"9C<h3 id="어떤-문제인가">어떤 문제인가</h3>
+
+<p><code class="language-plaintext highlighter-rouge">(</code>와 <code class="language-plaintext highlighter-rouge">)</code>의 개수는 같지만 짝은 맞지 않을 수 있는 문자열이 주어진다.
+문제에 <strong>변환 절차가 단계별로 그대로 제시되어 있고</strong>, 그 절차를 따라 짝이 맞는 문자열로 바꾸면 되는 문제다.
+문자열 길이는 2 이상 1,000 이하의 짝수다.</p>
+
+<p>용어 두 개만 구분하면 된다.</p>
+
+<ul>
+  <li><strong>균형잡힌 괄호 문자열</strong> — <code class="language-plaintext highlighter-rouge">(</code>와 <code class="language-plaintext highlighter-rouge">)</code>의 개수가 같다</li>
+  <li><strong>올바른 괄호 문자열</strong> — 개수도 같고 짝도 맞는다</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">"(()))("</code>는 앞의 것만 만족하고, <code class="language-plaintext highlighter-rouge">"(())()"</code>는 둘 다 만족한다.</p>
+
+<p><br /></p>
+
+<h3 id="절차를-그대로-옮기면-되는-문제">절차를 그대로 옮기면 되는 문제</h3>
+
+<p>이 문제는 생각보다 간단하다. 문제에 나열되어 있는 단계를 그대로 알고리즘으로 옮기면 끝이다.
+알고리즘을 새로 설계하는 게 아니라 <strong>주어진 명세를 정확히 구현하는</strong> 유형이라, 오히려 조건을 빠뜨리지 않고 옮기는 게 관건이었다.</p>
+
+<p>구현해야 할 절차는 이렇다.</p>
+
+<ol>
+  <li>빈 문자열이면 그대로 반환</li>
+  <li>더 이상 쪼갤 수 없는 균형잡힌 문자열 <code class="language-plaintext highlighter-rouge">u</code>와 나머지 <code class="language-plaintext highlighter-rouge">v</code>로 분리</li>
+  <li><code class="language-plaintext highlighter-rouge">u</code>가 올바른 문자열이면 → <code class="language-plaintext highlighter-rouge">u</code> + (<code class="language-plaintext highlighter-rouge">v</code>를 재귀 처리한 결과)</li>
+  <li><code class="language-plaintext highlighter-rouge">u</code>가 올바르지 않으면 → <code class="language-plaintext highlighter-rouge">"("</code> + (<code class="language-plaintext highlighter-rouge">v</code>를 재귀 처리) + <code class="language-plaintext highlighter-rouge">")"</code> + (<code class="language-plaintext highlighter-rouge">u</code>의 양끝을 떼고 방향을 뒤집은 것)</li>
+</ol>
+
+<p><br /></p>
+
+<h3 id="cnt-변수-하나로-두-가지를-판별한다">cnt 변수 하나로 두 가지를 판별한다</h3>
+
+<p>균형잡힌 괄호 문자열을 알아내기 위해 <code class="language-plaintext highlighter-rouge">cnt</code> 변수를 이용해 <code class="language-plaintext highlighter-rouge">(</code>와 <code class="language-plaintext highlighter-rouge">)</code>의 수가 같아지는 지점을 찾아 <code class="language-plaintext highlighter-rouge">u</code>와 <code class="language-plaintext highlighter-rouge">v</code>로 나누어 주었다.
+올바른 괄호 문자열 또한 <code class="language-plaintext highlighter-rouge">cnt</code> 변수를 이용하여 판별하였다.</p>
+
+<p>같은 변수를 쓰지만 세는 방식이 다르다.</p>
+
+<p><strong>분리할 때</strong> — <code class="language-plaintext highlighter-rouge">(</code>면 +1, <code class="language-plaintext highlighter-rouge">)</code>면 -1로 세다가 처음으로 0이 되는 지점에서 자른다.
+개수가 같아지는 가장 이른 지점이므로, 그게 “더 이상 쪼갤 수 없는” 조건을 만족한다.</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="sc">'('</span><span class="p">)</span> <span class="o">++</span><span class="n">cnt</span><span class="p">;</span>
+<span class="k">else</span> <span class="o">--</span><span class="n">cnt</span><span class="p">;</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">cnt</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="k">break</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>올바른지 판별할 때</strong> — 같은 방식으로 세되, <code class="language-plaintext highlighter-rouge">cnt</code>가 0인 상태에서 <code class="language-plaintext highlighter-rouge">)</code>를 만나면 짝이 안 맞는다는 뜻이다.
+아래 코드는 그 경우를 <code class="language-plaintext highlighter-rouge">++cnt</code>로 표시해 두고 넘어가서, 마지막에 <code class="language-plaintext highlighter-rouge">cnt</code>가 0이 아니면 올바르지 않다고 판단한다.</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">cnt</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="sc">')'</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">++</span><span class="n">cnt</span><span class="p">;</span>
+    <span class="k">continue</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><br /></p>
+
+<h3 id="4번-절차의-순서를-지켜야-한다">4번 절차의 순서를 지켜야 한다</h3>
+
+<p>가장 실수하기 쉬운 곳이 4번이다. 붙이는 순서가 정해져 있다.</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">u</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>                    <span class="c1">// 첫 문자 제거</span>
+<span class="n">u</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">u</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>         <span class="c1">// 마지막 문자 제거</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">u</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="sc">'('</span><span class="p">)</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="sc">')'</span><span class="p">;</span>
+    <span class="k">else</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'('</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">return</span> <span class="s">"("</span> <span class="o">+</span> <span class="n">checkGH</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="s">")"</span> <span class="o">+</span> <span class="n">u</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">v</code>를 먼저 재귀 처리해서 <code class="language-plaintext highlighter-rouge">(</code>와 <code class="language-plaintext highlighter-rouge">)</code> 사이에 넣고, <strong>뒤집은 <code class="language-plaintext highlighter-rouge">u</code>는 그 뒤에</strong> 붙인다.
+<code class="language-plaintext highlighter-rouge">u</code>의 양끝을 떼는 것과 방향을 뒤집는 것을 헷갈려 순서를 바꾸면 답이 달라진다.</p>
+
+<p><br /></p>
+
+<h3 id="시간-복잡도">시간 복잡도</h3>
+
+<p>재귀 한 단계마다 문자열을 훑고 <code class="language-plaintext highlighter-rouge">substr</code>로 새 문자열을 만든다.
+최악의 경우(매번 앞 2글자만 떨어져 나가는 형태) 깊이가 n/2이고 각 단계가 O(n)이라 <strong>O(n²)</strong> 이다.
+n이 1,000이라 100만 번 수준이고 제한 안에 들어온다.</p>
+
+<p><br /></p>
+
+<h3 id="풀이-코드">풀이 코드</h3>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;vector&gt;
+#include &lt;string&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="n">string</span> <span class="nf">checkGH</span><span class="p">(</span><span class="n">string</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span> <span class="k">return</span> <span class="n">p</span><span class="p">;</span>
+
+    <span class="n">string</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">;</span>
+
+    <span class="kt">int</span> <span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="sc">'('</span><span class="p">)</span> <span class="o">++</span><span class="n">cnt</span><span class="p">;</span>
+        <span class="k">else</span> <span class="o">--</span><span class="n">cnt</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">cnt</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">u</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">cnt</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="sc">')'</span><span class="p">)</span> <span class="p">{</span>
+            <span class="o">++</span><span class="n">cnt</span><span class="p">;</span>
+            <span class="k">continue</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="sc">'('</span><span class="p">)</span> <span class="o">++</span><span class="n">cnt</span><span class="p">;</span>
+        <span class="k">else</span> <span class="o">--</span><span class="n">cnt</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">cnt</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">checkGH</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">u</span> <span class="o">+</span> <span class="n">v</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="n">u</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="n">u</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">u</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">u</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="sc">'('</span><span class="p">)</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="sc">')'</span><span class="p">;</span>
+            <span class="k">else</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'('</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="s">"("</span> <span class="o">+</span> <span class="n">checkGH</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="s">")"</span> <span class="o">+</span> <span class="n">u</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">string</span> <span class="nf">solution</span><span class="p">(</span><span class="n">string</span> <span class="n">p</span><span class="p">){</span>
+    <span class="k">return</span> <span class="n">checkGH</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><br /></p>
+
+<h3 id="배운-점">배운 점</h3>
+
+<p>명세가 길게 주어지는 문제는 알고리즘 실력보다 <strong>읽은 걸 빠뜨리지 않고 옮기는 정확도</strong>를 본다는 걸 알게 됐다.
+이런 유형은 코드를 쓰기 전에 절차를 번호대로 적어두고, 구현하면서 하나씩 지워가는 편이 확실했다.</p>
+
+<p><br /><br /></p>
+
+<h3 id="문제-출처">문제 출처</h3>
+<p><a href="https://programmers.co.kr/learn/courses/30/lessons/60058">프로그래머스 괄호 변환</a></p>
+:ET

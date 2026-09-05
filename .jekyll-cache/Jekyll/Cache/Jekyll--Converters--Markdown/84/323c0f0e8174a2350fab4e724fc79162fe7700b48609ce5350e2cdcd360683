@@ -1,0 +1,74 @@
+I"Â<h3 id="bankaccount-project">BankAccount project</h3>
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">accounts</span>
+
+<span class="k">import</span> <span class="p">(</span>
+	<span class="s">"errors"</span>
+	<span class="s">"fmt"</span>
+<span class="p">)</span>
+
+<span class="c">// Account struct</span>
+<span class="k">type</span> <span class="n">Account</span> <span class="k">struct</span> <span class="p">{</span>
+	<span class="n">owner</span>   <span class="kt">string</span>
+	<span class="n">balance</span> <span class="kt">int</span>
+<span class="p">}</span>
+
+<span class="k">var</span> <span class="n">errnoMoney</span> <span class="o">=</span> <span class="n">errors</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="s">"Can't withdraw"</span><span class="p">)</span>
+
+<span class="c">// NewAccount creates Account</span>
+<span class="k">func</span> <span class="n">NewAccount</span><span class="p">(</span><span class="n">owner</span> <span class="kt">string</span><span class="p">)</span> <span class="o">*</span><span class="n">Account</span> <span class="p">{</span>
+	<span class="n">account</span> <span class="o">:=</span> <span class="n">Account</span><span class="p">{</span><span class="n">owner</span><span class="o">:</span> <span class="n">owner</span><span class="p">,</span> <span class="n">balance</span><span class="o">:</span> <span class="m">0</span><span class="p">}</span>
+	<span class="k">return</span> <span class="o">&amp;</span><span class="n">account</span>
+<span class="p">}</span>
+
+<span class="c">// Deposit x amount on your account</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span><span class="n">Account</span><span class="p">)</span> <span class="n">Deposit</span><span class="p">(</span><span class="n">amount</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">a</span><span class="o">.</span><span class="n">balance</span> <span class="o">+=</span> <span class="n">amount</span>
+<span class="p">}</span>
+
+<span class="c">// Balance of your account</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">a</span> <span class="n">Account</span><span class="p">)</span> <span class="n">Balance</span><span class="p">()</span> <span class="kt">int</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="n">balance</span>
+<span class="p">}</span>
+
+<span class="c">// Withdraw x amount from your account</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span><span class="n">Account</span><span class="p">)</span> <span class="n">Withdraw</span><span class="p">(</span><span class="n">amount</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">balance</span> <span class="o">&lt;</span> <span class="n">amount</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="n">errnoMoney</span>
+	<span class="p">}</span>
+	<span class="n">a</span><span class="o">.</span><span class="n">balance</span> <span class="o">-=</span> <span class="n">amount</span>
+	<span class="k">return</span> <span class="no">nil</span>		<span class="c">//nil = null, err no exist</span>
+<span class="p">}</span>
+
+<span class="c">// ChangeOnwer of the account</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span><span class="n">Account</span><span class="p">)</span> <span class="n">ChangeOwner</span><span class="p">(</span><span class="n">newOwner</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">a</span><span class="o">.</span><span class="n">owner</span> <span class="o">=</span> <span class="n">newOwner</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="p">(</span><span class="n">a</span> <span class="n">Account</span><span class="p">)</span> <span class="n">Owner</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="n">owner</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="p">(</span><span class="n">a</span> <span class="n">Account</span><span class="p">)</span> <span class="n">String</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprint</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">Owner</span><span class="p">(),</span> <span class="s">"'s account.</span><span class="se">\n</span><span class="s">Has: "</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">Balance</span><span class="p">())</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+	<span class="s">"fmt"</span>
+
+	<span class="s">"github.com/y00913/learngo/accounts"</span>
+<span class="p">)</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">account</span> <span class="o">:=</span> <span class="n">accounts</span><span class="o">.</span><span class="n">NewAccount</span><span class="p">(</span><span class="s">"nico"</span><span class="p">)</span>
+	<span class="n">account</span><span class="o">.</span><span class="n">Deposit</span><span class="p">(</span><span class="m">10</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">account</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p><br /><br /><br /><br /><br /><br /><br /><br /></p>
+:ET

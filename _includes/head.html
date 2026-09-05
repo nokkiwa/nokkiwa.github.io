@@ -15,46 +15,49 @@
   </script>
   {% endunless %}
 
+  {%- comment -%}
+    글 페이지는 본문 앞부분에서 설명문을 만든다. page.excerpt는 첫 블록만 잡아
+    코드블록이나 제목이 그대로 설명문이 되는 경우가 있어 본문(page.content)을 쓴다.
+    목록·소개·정책 페이지처럼 글이 아닌 곳은 사이트 기본 설명을 쓴다.
+  {%- endcomment -%}
+  {%- if page.date -%}
+    {%- assign meta_body = page.content | replace: '</h1>', ' ' | replace: '</h2>', ' ' | replace: '</p>', ' ' | replace: '<br>', ' ' -%}
+    {%- assign meta_desc = meta_body | strip_html | strip_newlines | truncatewords: 28 | escape -%}
+  {%- elsif page.description -%}
+    {%- assign meta_desc = page.description | escape -%}
+  {%- endif -%}
   <meta
     name="description"
-    content="{{ page.excerpt | strip_html | truncatewords: 20 | default: '오늘의 트렌드  정보 블로그' }}"
+    content="{{ meta_desc | default: site.description | strip_newlines | escape }}"
   />
-  <meta
-    name="keywords"
-    content="{{ page.keyword | default: '트렌드, 트렌드 정보, 키워드, 요리, 외국 요리, 세계 요리, 조리법, 명언, 영단어, 요리 유래' }}"
-  />
+  <meta name="author" content="{{ site.author | escape }}" />
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <title>
-    {%- assign cutoff_date = '2025-11-01' | date: "%s" -%} {%- assign
-    page_date_unix = page.date | date: "%s" -%} {%- if page.title -%} {%- if
-    page_date_unix < cutoff_date -%} {{ page.title | escape }} {{ page.date |
-    date: "%Y-%m-%d" }} {%- else -%} {{ page.title | escape }} {%- endif -%} {%-
-    else -%} {{ site.title | escape }} {%- endif -%}
+    {%- if page.title -%}
+      {{ page.title | escape }} | {{ site.title | escape }}
+    {%- else -%}
+      {{ site.title | escape }} - {{ site.tagline | escape }}
+    {%- endif -%}
   </title>
 
   <meta name="robots" content="index,follow" />
-  <meta property="og:site_name" content="ALOG" />
-  <meta property="og:title" content="{{ page.title | default: 'ALOG' }}" />
+  <meta property="og:site_name" content="{{ site.title | escape }}" />
+  <meta property="og:title" content="{{ page.title | default: site.title | escape }}" />
   <meta
     property="og:description"
-    content="{{ page.excerpt | strip_html | truncatewords: 20 | default: '오늘의 트렌드 정보 블로그' }}"
+    content="{{ meta_desc | default: site.description | strip_newlines | escape }}"
   />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="{{ page.url | absolute_url }}" />
-  <meta property="article:tag" content="트렌드" />
-  <meta property="article:tag" content="트렌드 정보" />
-  <meta property="article:tag" content="키워드" />
-  <meta property="article:tag" content="요리" />
-  <meta property="article:tag" content="외국 요리" />
-  <meta property="article:tab" content="세계 요리" />
-  <meta property="article:tag" content="조리법" />
-  <meta property="article:tag" content="명언" />
-  <meta property="article:tag" content="영단어" />
-  <meta property="article:tag" content="요리 유래" />
+  {%- if page.categories -%}
+    {%- for cat in page.categories -%}
+  <meta property="article:tag" content="{{ cat | escape }}" />
+    {%- endfor -%}
+  {%- endif -%}
   <link rel="canonical" href="{{ page.url | absolute_url }}" />
   <link rel="icon" href="/favicon.ico" />
   <link rel="shortcut icon" href="/favicon.ico" />
@@ -70,7 +73,7 @@
         "@id": "{{ page.url | absolute_url }}"
       },
       "headline": "{{ page.title | escape }}",
-      "description": "{{ page.excerpt | strip_html | strip_newlines | escape | truncate: 110 }}",
+      "description": "{{ meta_desc | default: site.description | strip_newlines | escape | truncate: 200 }}",
       "author": {
         "@type": "Person",
         "name": "{{ site.author | default: site.title | escape }}"
