@@ -1,0 +1,157 @@
+I"�D<p><a href="https://www.acmicpc.net/problem/11657">11657번: 타임머신</a></p>
+
+<h3 id="어떤-문제인가">어떤 문제인가</h3>
+
+<p>도시 <code class="language-plaintext highlighter-rouge">N</code>개와 버스 노선 <code class="language-plaintext highlighter-rouge">M</code>개가 있는데, <strong>이동에 걸리는 시간이 음수일 수도 있다.</strong>
+1번 도시에서 나머지 도시로 가는 최단 시간을 구하되, 시간을 무한히 되돌릴 수 있으면 <code class="language-plaintext highlighter-rouge">-1</code>을 출력하는 문제다.</p>
+
+<p><code class="language-plaintext highlighter-rouge">N</code>은 최대 500, <code class="language-plaintext highlighter-rouge">M</code>은 최대 6,000이고 가중치는 -10,000 ~ 10,000이다.</p>
+
+<p><br /></p>
+
+<h3 id="왜-다익스트라가-아니라-벨만-포드인가">왜 다익스트라가 아니라 벨만 포드인가</h3>
+
+<p>최단 거리 문제를 보면 반사적으로 다익스트라를 떠올리게 되는데, <strong>여기서는 쓸 수 없다.</strong></p>
+
+<p>다익스트라는 “지금까지 찾은 가장 짧은 경로는 앞으로 더 짧아질 수 없다”는 전제로 확정을 짓는다.
+그런데 음수 간선이 있으면 나중에 음수 간선을 타고 돌아와 더 짧아질 수 있어서 그 전제가 깨진다.</p>
+
+<p>그래서 음수 가중치가 있으면 <strong>벨만 포드</strong>다.
+벨만 포드는 확정을 짓지 않고 <strong>모든 간선을 N-1번 반복해서 훑으며</strong> 거리를 계속 갱신한다.</p>
+
+<p><code class="language-plaintext highlighter-rouge">N-1</code>번인 이유는, 사이클이 없는 최단 경로가 최대 <code class="language-plaintext highlighter-rouge">N-1</code>개의 간선으로 이루어지기 때문이다.
+한 번 순회할 때마다 최소 한 개의 정점이 확정되므로 <code class="language-plaintext highlighter-rouge">N-1</code>번이면 충분하다.</p>
+
+<p><br /></p>
+
+<h3 id="음수-사이클을-잡는-법">음수 사이클을 잡는 법</h3>
+
+<p>여기가 이 문제의 진짜 포인트다.
+<code class="language-plaintext highlighter-rouge">N-1</code>번을 다 돌았으면 더 이상 갱신될 게 없어야 한다. 그런데 <strong>한 번 더 돌렸을 때도 값이 줄어든다면</strong>, 돌수록 짧아지는 경로가 있다는 뜻이다. 그게 음수 사이클이다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">M</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">from</span><span class="p">]</span> <span class="o">==</span> <span class="n">INF</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">to</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">d</span><span class="p">[</span><span class="n">from</span><span class="p">]</span> <span class="o">+</span> <span class="n">cost</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">N-1</code>번 순회가 끝난 뒤 같은 검사를 한 번 더 돌려서, 갱신이 일어나면 <code class="language-plaintext highlighter-rouge">-1</code>을 출력한다.</p>
+
+<p><br /></p>
+
+<h3 id="접근-방식">접근 방식</h3>
+
+<p>기존 벨만 포드와 동일하게 구현하면 된다.
+다만 도달할 수 없는 도시가 있을 수 있어서, <code class="language-plaintext highlighter-rouge">d[from] == INF</code>일 경우 <code class="language-plaintext highlighter-rouge">continue</code>하는 조건을 추가했다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">from</span><span class="p">]</span> <span class="o">==</span> <span class="n">INF</span> <span class="o">||</span> <span class="n">d</span><span class="p">[</span><span class="n">to</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">d</span><span class="p">[</span><span class="n">from</span><span class="p">]</span> <span class="o">+</span> <span class="n">cost</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>이 조건이 왜 필요하냐면, 아직 도달하지 못한 도시(<code class="language-plaintext highlighter-rouge">INF</code>)에서 <strong>음수 간선</strong>을 타면 <code class="language-plaintext highlighter-rouge">INF + (-10000)</code>이 되어 <code class="language-plaintext highlighter-rouge">INF</code>보다 작아진다.
+그러면 갈 수 없는 도시가 갈 수 있는 것처럼 갱신되어 버린다.</p>
+
+<p><code class="language-plaintext highlighter-rouge">INF</code>를 <code class="language-plaintext highlighter-rouge">4e10</code>으로 크게 잡고 <code class="language-plaintext highlighter-rouge">d</code>를 <code class="language-plaintext highlighter-rouge">long long</code>으로 둔 것도 같은 맥락이다.
+<code class="language-plaintext highlighter-rouge">int</code>의 최댓값 근처로 잡으면 여러 번 더해지면서 오버플로가 나 음수로 뒤집힐 수 있다.</p>
+
+<p><br /></p>
+
+<h3 id="시간-복잡도">시간 복잡도</h3>
+
+<p>간선 전체를 <code class="language-plaintext highlighter-rouge">N-1</code>번 훑으므로 <strong>O(N × M)</strong> 이다.
+500 × 6,000 = 300만 번이라 여유롭다.</p>
+
+<p>다익스트라의 O(E log V)보다 느리지만, 음수 간선이 있으면 선택지가 없다.</p>
+
+<p><br /></p>
+
+<h3 id="배운-점">배운 점</h3>
+
+<p>생각보다 오래 걸린 문제였다.
+음수 가중치가 존재하고 최단 거리를 구해야 한다는 점에서 벨만 포드는 금방 유추해냈는데, <strong>자료형, 최댓값, 조건문, 음수 사이클 찾기</strong>를 잘못 설정해 계속 틀렸다.</p>
+
+<p>정리하면 이 문제에서 틀리기 쉬운 지점이 네 군데였다.</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">d</code> 배열을 <code class="language-plaintext highlighter-rouge">int</code>로 두어 오버플로</li>
+  <li><code class="language-plaintext highlighter-rouge">INF</code>를 너무 작게 잡아 음수 간선과 더해지며 갱신됨</li>
+  <li><code class="language-plaintext highlighter-rouge">d[from] == INF</code> 검사를 빼먹어 도달 불가 도시가 갱신됨</li>
+  <li>음수 사이클 검사를 <code class="language-plaintext highlighter-rouge">N-1</code>번 안에 섞어버림</li>
+</ul>
+
+<p>전부 문제를 꼼꼼히 읽지 않아 생긴 일이었다. 문제를 잘 읽어보고 풀도록 하자.</p>
+
+<p>음수 간선이 없는 최단 경로는 <a href="/baekjoon/2026/08/21/백준-5972-택배-배송.html">5972 택배 배송</a>에서 다익스트라로 풀었다. 두 문제를 비교해보면 언제 무엇을 쓰는지가 선명해진다.</p>
+
+<p><br /></p>
+
+<hr />
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+</span>
+<span class="cp">#define INF 4e10
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">;</span>
+<span class="n">vector</span><span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span><span class="p">,</span> <span class="kt">long</span> <span class="kt">long</span><span class="o">&gt;&gt;</span> <span class="n">v</span><span class="p">;</span>
+<span class="kt">long</span> <span class="kt">long</span> <span class="n">d</span><span class="p">[</span><span class="mi">501</span><span class="p">];</span>
+
+<span class="kt">void</span> <span class="nf">solution</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">INF</span><span class="p">;</span>
+	<span class="p">}</span>
+
+	<span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+	<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">M</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+			<span class="kt">int</span> <span class="n">from</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">first</span><span class="p">.</span><span class="n">first</span><span class="p">;</span>
+			<span class="kt">int</span> <span class="n">to</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">first</span><span class="p">.</span><span class="n">second</span><span class="p">;</span>
+			<span class="kt">int</span> <span class="n">cost</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">second</span><span class="p">;</span>
+
+			<span class="k">if</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">from</span><span class="p">]</span> <span class="o">==</span> <span class="n">INF</span> <span class="o">||</span> <span class="n">d</span><span class="p">[</span><span class="n">to</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">d</span><span class="p">[</span><span class="n">from</span><span class="p">]</span> <span class="o">+</span> <span class="n">cost</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+
+			<span class="n">d</span><span class="p">[</span><span class="n">to</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">from</span><span class="p">]</span> <span class="o">+</span> <span class="n">cost</span><span class="p">;</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">M</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+		<span class="kt">int</span> <span class="n">from</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">first</span><span class="p">.</span><span class="n">first</span><span class="p">;</span>
+		<span class="kt">int</span> <span class="n">to</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">first</span><span class="p">.</span><span class="n">second</span><span class="p">;</span>
+		<span class="kt">int</span> <span class="n">cost</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">second</span><span class="p">;</span>
+
+		<span class="k">if</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">from</span><span class="p">]</span> <span class="o">==</span> <span class="n">INF</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">to</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">d</span><span class="p">[</span><span class="n">from</span><span class="p">]</span> <span class="o">+</span> <span class="n">cost</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+			<span class="k">return</span><span class="p">;</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">INF</span><span class="p">)</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+		<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+	<span class="n">ios_base</span><span class="o">::</span><span class="n">sync_with_stdio</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+	<span class="n">cin</span><span class="p">.</span><span class="n">tie</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span> <span class="n">cout</span><span class="p">.</span><span class="n">tie</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+
+	<span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">N</span> <span class="o">&gt;&gt;</span> <span class="n">M</span><span class="p">;</span>
+
+	<span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">;</span>
+	<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">M</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">a</span> <span class="o">&gt;&gt;</span> <span class="n">b</span> <span class="o">&gt;&gt;</span> <span class="n">c</span><span class="p">;</span>
+		<span class="n">v</span><span class="p">.</span><span class="n">push_back</span><span class="p">({</span> <span class="p">{</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">},</span><span class="n">c</span> <span class="p">});</span>
+	<span class="p">}</span>
+
+	<span class="n">solution</span><span class="p">();</span>
+	
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+:ET

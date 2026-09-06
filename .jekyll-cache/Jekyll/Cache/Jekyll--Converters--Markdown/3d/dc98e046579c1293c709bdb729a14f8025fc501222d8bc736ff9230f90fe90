@@ -1,0 +1,188 @@
+I"iX<p><a href="https://www.acmicpc.net/problem/1774">1774번: 우주신과의 교감</a></p>
+
+<h3 id="어떤-문제인가">어떤 문제인가</h3>
+
+<p>평면 위에 우주신 <code class="language-plaintext highlighter-rouge">N</code>개의 좌표가 주어지고, 그중 일부는 <strong>이미 연결되어 있다.</strong>
+나머지를 전부 이어 모두가 통하게 만들 때, 새로 만들어야 하는 통로 길이의 합을 최소로 하는 문제다.</p>
+
+<p>통로 길이는 두 점 사이의 직선 거리(유클리드 거리)이고, <code class="language-plaintext highlighter-rouge">N</code>과 이미 연결된 쌍의 수 <code class="language-plaintext highlighter-rouge">M</code> 모두 최대 1,000이다.</p>
+
+<p><br /></p>
+
+<h3 id="왜-최소-스패닝-트리인가">왜 최소 스패닝 트리인가</h3>
+
+<p>“전부 연결하되 총 길이 최소”는 MST 그대로다.
+이 문제만의 특징은 <strong>일부 간선이 이미 놓여 있고, 그건 공짜</strong>라는 점이다.</p>
+
+<p>여기서 헤맬 수 있는데, 처리는 의외로 간단하다.
+크루스칼을 시작하기 <strong>전에</strong> 이미 연결된 쌍들을 먼저 <code class="language-plaintext highlighter-rouge">union</code> 해버리면 된다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">M</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">first</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">second</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="n">swap</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">);</span>
+    <span class="n">unionParent</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>이렇게 해두면 그 쌍들은 이미 같은 집합에 속하므로, 나중에 크루스칼이 그 사이를 잇는 간선을 만나도 <code class="language-plaintext highlighter-rouge">sameParent</code>에 걸려 자동으로 건너뛴다.
+“공짜 간선”을 비용 0으로 취급해 따로 넣을 필요 없이, <strong>집합만 미리 합쳐두면 되는</strong> 구조다.</p>
+
+<p><br /></p>
+
+<h3 id="접근-방식">접근 방식</h3>
+
+<p>크루스칼 알고리즘을 사용하기 위해 <strong>가중치와 경로를 구하는 것</strong>이 중요한 포인트다.</p>
+
+<ol>
+  <li>부모 노드를 나타내는 <code class="language-plaintext highlighter-rouge">p</code> 배열을 초기화한다</li>
+  <li>입력으로 받은 이미 연결된 경로를 모두 <code class="language-plaintext highlighter-rouge">union</code> 해준다</li>
+  <li>각 노드 간의 모든 경로와 거리를 구한다</li>
+  <li>오름차순으로 정렬한 뒤 크루스칼을 돌면서 가중치를 더한다</li>
+  <li>소수점 둘째 자리까지 출력한다</li>
+</ol>
+
+<p>거리는 두 점 사이 직선 거리를 그대로 쓴다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">long</span> <span class="kt">long</span> <span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="kt">long</span> <span class="kt">long</span><span class="p">)</span> <span class="n">pow</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">first</span> <span class="o">-</span> <span class="n">n</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">first</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+<span class="kt">long</span> <span class="kt">long</span> <span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="kt">long</span> <span class="kt">long</span><span class="p">)</span> <span class="n">pow</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">second</span> <span class="o">-</span> <span class="n">n</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">second</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+<span class="kt">double</span> <span class="n">c</span> <span class="o">=</span> <span class="p">(</span><span class="kt">double</span><span class="p">)</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>좌표가 최대 1,000,000이라 차이의 제곱이 10¹²까지 갈 수 있어서 <code class="language-plaintext highlighter-rouge">long long</code>으로 받았다.
+다만 <code class="language-plaintext highlighter-rouge">pow</code>는 부동소수점 함수라 정수 제곱에 쓰면 미세하게 어긋난 값이 나올 수 있다. <code class="language-plaintext highlighter-rouge">(long long)(dx) * dx</code>처럼 <strong>직접 곱하는 편이 안전하고 빠르다.</strong></p>
+
+<p>출력은 소수점 둘째 자리 고정이다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">fixed</span><span class="p">;</span>
+<span class="n">cout</span><span class="p">.</span><span class="n">precision</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p><br /></p>
+
+<h3 id="시간-복잡도">시간 복잡도</h3>
+
+<p>모든 쌍의 거리를 구하므로 간선이 <code class="language-plaintext highlighter-rouge">N(N-1)/2</code>개, N이 1,000이면 약 50만 개다.
+여기에 정렬 <strong>O(E log E)</strong> 가 붙는다. N이 작아서 이 방식으로 통과한다.</p>
+
+<p><br /></p>
+
+<h3 id="배운-점">배운 점</h3>
+
+<p>어렵지 않게 풀 수 있었던 문제였다.
+단순히 모든 경로와 가중치를 구해 해결했지만, 사실 필요한 것은 <code class="language-plaintext highlighter-rouge">N-1</code>개의 간선뿐이라 시간을 더 줄일 여지가 있다.</p>
+
+<p>크루스칼을 쓰기 위해 <strong>입력을 간선 목록으로 만들어내는</strong> 이 방식도 인지해두자.</p>
+
+<p>이 문제는 N이 1,000이라 모든 쌍을 만들어도 됐지만, <a href="/baekjoon/2026/08/24/백준-2887-행성-터널.html">2887 행성 터널</a>은 N이 100,000이라 같은 방식이 통하지 않는다.
+<strong>N의 크기가 “모든 쌍을 만들어도 되는가”를 가르는 기준</strong>이라는 걸 두 문제를 나란히 풀면서 알게 됐다.</p>
+
+<p>MST 유형은 <a href="/baekjoon/2026/08/27/백준-1647-도시-분할-계획.html">1647 도시 분할 계획</a>도 함께 정리해뒀다.</p>
+
+<p><br /></p>
+
+<hr />
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;cmath&gt;
+#include &lt;algorithm&gt;
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">;</span>
+<span class="n">vector</span><span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">n</span><span class="p">;</span>
+<span class="n">vector</span><span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">m</span><span class="p">;</span>
+<span class="n">vector</span><span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">pair</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&gt;&gt;</span> <span class="n">v</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">p</span><span class="p">[</span><span class="mi">1001</span><span class="p">];</span>
+<span class="kt">double</span> <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">findParent</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="n">p</span><span class="p">[</span><span class="n">a</span><span class="p">])</span> <span class="k">return</span> <span class="n">a</span><span class="p">;</span>
+    <span class="k">else</span> <span class="k">return</span> <span class="n">p</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">=</span> <span class="n">findParent</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">a</span><span class="p">]);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">unionParent</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">findParent</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">findParent</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">!=</span> <span class="n">b</span><span class="p">)</span> <span class="n">p</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span> <span class="nf">sameParent</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">findParent</span><span class="p">(</span><span class="n">a</span><span class="p">);</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">findParent</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="n">b</span><span class="p">)</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="k">else</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">findRoot</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kt">long</span> <span class="kt">long</span> <span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="kt">long</span> <span class="kt">long</span><span class="p">)</span> <span class="n">pow</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">first</span> <span class="o">-</span> <span class="n">n</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">first</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+            <span class="kt">long</span> <span class="kt">long</span> <span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="kt">long</span> <span class="kt">long</span><span class="p">)</span> <span class="n">pow</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">second</span> <span class="o">-</span> <span class="n">n</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">second</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+            <span class="kt">double</span> <span class="n">c</span> <span class="o">=</span> <span class="p">(</span><span class="kt">double</span><span class="p">)</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">);</span>
+            
+            <span class="n">v</span><span class="p">.</span><span class="n">push_back</span><span class="p">({</span> <span class="n">c</span><span class="p">,</span> <span class="p">{</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">}</span> <span class="p">});</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">solution</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">M</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">first</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">second</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="n">swap</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">);</span>
+
+        <span class="n">unionParent</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">findRoot</span><span class="p">();</span>
+
+    <span class="n">sort</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">v</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">second</span><span class="p">.</span><span class="n">first</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">second</span><span class="p">.</span><span class="n">second</span><span class="p">;</span>
+        <span class="kt">double</span> <span class="n">c</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">first</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">sameParent</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span> <span class="p">{</span>
+            <span class="n">unionParent</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">);</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="n">c</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">fixed</span><span class="p">;</span>
+    <span class="n">cout</span><span class="p">.</span><span class="n">precision</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">ios_base</span><span class="o">::</span><span class="n">sync_with_stdio</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+    <span class="n">cin</span><span class="p">.</span><span class="n">tie</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span> <span class="n">cout</span><span class="p">.</span><span class="n">tie</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+
+    <span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">N</span> <span class="o">&gt;&gt;</span> <span class="n">M</span><span class="p">;</span>
+
+    <span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">a</span> <span class="o">&gt;&gt;</span> <span class="n">b</span><span class="p">;</span>
+        <span class="n">n</span><span class="p">.</span><span class="n">push_back</span><span class="p">({</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="p">});</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">M</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">a</span> <span class="o">&gt;&gt;</span> <span class="n">b</span><span class="p">;</span>
+        <span class="n">m</span><span class="p">.</span><span class="n">push_back</span><span class="p">({</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="p">});</span>
+    <span class="p">}</span>
+
+    <span class="n">solution</span><span class="p">();</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+:ET

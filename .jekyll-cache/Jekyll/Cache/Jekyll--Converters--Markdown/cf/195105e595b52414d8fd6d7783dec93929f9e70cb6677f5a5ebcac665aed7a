@@ -1,0 +1,147 @@
+I"�A<p><a href="https://www.acmicpc.net/problem/16948">16948번: 데스 나이트</a></p>
+
+<h3 id="어떤-문제인가">어떤 문제인가</h3>
+
+<p><code class="language-plaintext highlighter-rouge">N × N</code> 체스판에서 데스 나이트가 정해진 여섯 방향으로만 움직일 수 있다.
+<code class="language-plaintext highlighter-rouge">(r1, c1)</code>에서 <code class="language-plaintext highlighter-rouge">(r2, c2)</code>까지 가는 <strong>최소 이동 횟수</strong>를 구하고, 갈 수 없으면 <code class="language-plaintext highlighter-rouge">-1</code>을 출력하는 문제다.</p>
+
+<p><code class="language-plaintext highlighter-rouge">N</code>은 5 이상 200 이하다.</p>
+
+<p><br /></p>
+
+<h3 id="왜-bfs인가">왜 BFS인가</h3>
+
+<p>“최소 이동 횟수”이고 <strong>한 번 움직이는 비용이 전부 1</strong>이다.
+가중치가 모두 같으면 BFS로 찾은 첫 도달 경로가 곧 최단 경로다. 다익스트라 같은 걸 쓸 필요가 없다.</p>
+
+<p>BFS는 시작점에서 거리 1인 칸을 전부 본 다음 거리 2인 칸을 보는 식으로 퍼져나가기 때문에, 목적지에 처음 닿는 순간이 최단 거리라는 게 보장된다.
+DFS로 풀면 먼저 찾은 경로가 최단이라는 보장이 없어서 모든 경로를 다 봐야 한다.</p>
+
+<p><br /></p>
+
+<h3 id="이동-방향을-배열로-빼기">이동 방향을 배열로 빼기</h3>
+
+<p>이 문제에서 실질적으로 할 일은 여섯 방향을 정확히 옮겨 적는 것이다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">dy</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span> <span class="p">};</span>
+<span class="kt">int</span> <span class="n">dx</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span> <span class="p">};</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">(-2,-1)</code>, <code class="language-plaintext highlighter-rouge">(-2,1)</code>, <code class="language-plaintext highlighter-rouge">(0,-2)</code>, <code class="language-plaintext highlighter-rouge">(0,2)</code>, <code class="language-plaintext highlighter-rouge">(2,-1)</code>, <code class="language-plaintext highlighter-rouge">(2,1)</code> 여섯 가지를 <code class="language-plaintext highlighter-rouge">dy</code>, <code class="language-plaintext highlighter-rouge">dx</code> 배열로 나눠 담았다.
+이렇게 해두면 반복문 하나로 전부 순회할 수 있어서, 방향마다 <code class="language-plaintext highlighter-rouge">if</code>를 쓰는 것보다 훨씬 덜 틀린다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">6</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">ny</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">dy</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+    <span class="kt">int</span> <span class="n">nx</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">dx</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">ny</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">nx</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">ny</span> <span class="o">&gt;=</span> <span class="n">N</span> <span class="o">||</span> <span class="n">nx</span> <span class="o">&gt;=</span> <span class="n">N</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">check</span><span class="p">[</span><span class="n">ny</span><span class="p">][</span><span class="n">nx</span><span class="p">])</span> <span class="k">continue</span><span class="p">;</span>
+    <span class="p">...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>두 개의 <code class="language-plaintext highlighter-rouge">continue</code>가 각각 <strong>격자 밖 검사</strong>와 <strong>방문 검사</strong>다.
+방문 검사를 빼면 같은 칸을 계속 오가면서 큐가 무한히 불어난다.</p>
+
+<p><br /></p>
+
+<h3 id="방문-표시를-넣는-시점">방문 표시를 넣는 시점</h3>
+
+<p>BFS에서 자주 틀리는 지점이 방문 표시를 언제 하느냐다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">q</span><span class="p">.</span><span class="n">push</span><span class="p">({</span> <span class="p">{</span><span class="n">ny</span><span class="p">,</span><span class="n">nx</span><span class="p">},</span><span class="n">count</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">});</span>
+<span class="n">check</span><span class="p">[</span><span class="n">ny</span><span class="p">][</span><span class="n">nx</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>큐에 <strong>넣는 순간</strong> 방문 처리를 해야 한다.
+꺼낼 때 처리하면, 아직 큐에 있지만 아직 안 꺼낸 칸을 다른 경로가 또 넣어버려서 같은 칸이 여러 번 들어간다. 정답은 나와도 시간과 메모리가 낭비된다.</p>
+
+<p>거리는 별도 배열 대신 큐에 <code class="language-plaintext highlighter-rouge">count</code>를 같이 담아 관리했다.</p>
+
+<p><br /></p>
+
+<h3 id="시간-복잡도">시간 복잡도</h3>
+
+<p>각 칸을 한 번씩만 방문하고 칸마다 여섯 방향을 보므로 <strong>O(N²)</strong> 이다.
+N이 200이면 40,000칸이라 아주 여유롭다.</p>
+
+<p><br /></p>
+
+<h3 id="배운-점">배운 점</h3>
+
+<p>간단한 BFS 구현 문제로, 문제에서 주어진 이동 조건을 <code class="language-plaintext highlighter-rouge">dy</code>, <code class="language-plaintext highlighter-rouge">dx</code>로 구현해 풀었다.
+쉽게 풀 수 있었던 문제였는데 <strong>오타로 인해 시간 낭비가 좀 있었다.</strong></p>
+
+<p>구체적으로는 <code class="language-plaintext highlighter-rouge">dy</code>, <code class="language-plaintext highlighter-rouge">dx</code> 배열의 값을 옮겨 적으면서 부호를 하나 잘못 넣었다.
+이런 실수는 컴파일도 되고 실행도 되니까 결과가 틀릴 때까지 안 보인다.</p>
+
+<p>방향 배열을 쓸 때는 옮겨 적은 뒤에 <strong>문제의 그림과 한 쌍씩 대조하는 습관</strong>을 들이는 게 낫겠다.
+<code class="language-plaintext highlighter-rouge">result</code>를 <code class="language-plaintext highlighter-rouge">-1</code>로 초기화해둔 것도 같은 이유인데, 도달 못 하면 그대로 <code class="language-plaintext highlighter-rouge">-1</code>이 출력되므로 별도 분기가 필요 없다.</p>
+
+<p>가중치가 있는 최단 경로는 <a href="/baekjoon/2026/08/21/백준-5972-택배-배송.html">5972 택배 배송</a>에서 다익스트라로 풀었다. 이 문제와 비교하면 BFS로 충분한 조건이 무엇인지 정리된다.</p>
+
+<p><br /></p>
+
+<hr />
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+#include &lt;queue&gt;
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="n">N</span><span class="p">,</span> <span class="n">result</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">r1</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">c2</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">dy</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span> <span class="p">};</span>
+<span class="kt">int</span> <span class="n">dx</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span> <span class="p">};</span>
+<span class="kt">bool</span> <span class="n">check</span><span class="p">[</span><span class="mi">200</span><span class="p">][</span><span class="mi">200</span><span class="p">];</span>
+
+<span class="kt">void</span> <span class="nf">bfs</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">queue</span><span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">q</span><span class="p">;</span>
+
+	<span class="n">q</span><span class="p">.</span><span class="n">push</span><span class="p">({</span> <span class="p">{</span><span class="n">r1</span><span class="p">,</span><span class="n">c1</span><span class="p">},</span><span class="mi">0</span> <span class="p">});</span>
+	<span class="n">check</span><span class="p">[</span><span class="n">r1</span><span class="p">][</span><span class="n">c1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+
+	<span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">q</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span> <span class="p">{</span>
+		<span class="kt">int</span> <span class="n">y</span> <span class="o">=</span> <span class="n">q</span><span class="p">.</span><span class="n">front</span><span class="p">().</span><span class="n">first</span><span class="p">.</span><span class="n">first</span><span class="p">;</span>
+		<span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="n">q</span><span class="p">.</span><span class="n">front</span><span class="p">().</span><span class="n">first</span><span class="p">.</span><span class="n">second</span><span class="p">;</span>
+		<span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">q</span><span class="p">.</span><span class="n">front</span><span class="p">().</span><span class="n">second</span><span class="p">;</span>
+
+		<span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="n">r2</span> <span class="o">&amp;&amp;</span> <span class="n">x</span> <span class="o">==</span> <span class="n">c2</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">result</span> <span class="o">=</span> <span class="n">count</span><span class="p">;</span>
+			<span class="k">break</span><span class="p">;</span>
+		<span class="p">}</span>
+
+		<span class="n">q</span><span class="p">.</span><span class="n">pop</span><span class="p">();</span>
+
+		<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">6</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+			<span class="kt">int</span> <span class="n">ny</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">dy</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+			<span class="kt">int</span> <span class="n">nx</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">dx</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+
+			<span class="k">if</span> <span class="p">(</span><span class="n">ny</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">nx</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">ny</span> <span class="o">&gt;=</span> <span class="n">N</span> <span class="o">||</span> <span class="n">nx</span> <span class="o">&gt;=</span> <span class="n">N</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+			<span class="k">if</span> <span class="p">(</span><span class="n">check</span><span class="p">[</span><span class="n">ny</span><span class="p">][</span><span class="n">nx</span><span class="p">])</span> <span class="k">continue</span><span class="p">;</span>
+
+			<span class="n">q</span><span class="p">.</span><span class="n">push</span><span class="p">({</span> <span class="p">{</span><span class="n">ny</span><span class="p">,</span><span class="n">nx</span><span class="p">},</span><span class="n">count</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">});</span>
+			<span class="n">check</span><span class="p">[</span><span class="n">ny</span><span class="p">][</span><span class="n">nx</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">solution</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">bfs</span><span class="p">();</span>
+
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+	<span class="n">ios_base</span><span class="o">::</span><span class="n">sync_with_stdio</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+	<span class="n">cin</span><span class="p">.</span><span class="n">tie</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span> <span class="n">cout</span><span class="p">.</span><span class="n">tie</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+
+	<span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">N</span><span class="p">;</span>
+	<span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">r1</span> <span class="o">&gt;&gt;</span> <span class="n">c1</span> <span class="o">&gt;&gt;</span> <span class="n">r2</span> <span class="o">&gt;&gt;</span> <span class="n">c2</span><span class="p">;</span>
+
+	<span class="n">solution</span><span class="p">();</span>
+	
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+:ET

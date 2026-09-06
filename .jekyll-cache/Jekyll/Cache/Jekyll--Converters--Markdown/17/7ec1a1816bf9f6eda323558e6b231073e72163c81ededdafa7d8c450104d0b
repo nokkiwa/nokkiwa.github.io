@@ -1,0 +1,180 @@
+I"�7<p><a href="https://www.acmicpc.net/problem/5972">5972번: 택배 배송</a></p>
+
+<h3 id="어떤-문제인가">어떤 문제인가</h3>
+
+<p>헛간 <code class="language-plaintext highlighter-rouge">N</code>개가 길로 이어져 있고, 각 길에는 지나갈 때 만나는 소의 수가 적혀 있다.
+1번 헛간에서 <code class="language-plaintext highlighter-rouge">N</code>번 헛간까지 가면서 <strong>만나는 소의 총합을 최소로</strong> 하는 문제다.</p>
+
+<p><code class="language-plaintext highlighter-rouge">N</code>과 길의 수 <code class="language-plaintext highlighter-rouge">M</code> 모두 최대 50,000이고, 길은 양방향이다.</p>
+
+<p><br /></p>
+
+<h3 id="왜-다익스트라인가">왜 다익스트라인가</h3>
+
+<p>조건이 딱 세 개다.</p>
+
+<ul>
+  <li>출발점 하나에서 특정 지점까지의 최단 거리</li>
+  <li>가중치가 <strong>모두 양수</strong></li>
+  <li>정점과 간선이 각각 5만 개</li>
+</ul>
+
+<p>가중치가 양수이므로 다익스트라가 맞다. 음수가 섞여 있었다면 <a href="/baekjoon/2026/08/12/백준-11657-타임머신.html">11657 타임머신</a>처럼 벨만 포드를 써야 했을 것이다.</p>
+
+<p>정점 5만 개에 벨만 포드를 쓰면 O(N × M) = 25억이라 시간 초과다. 다익스트라의 O(E log V)가 필요한 규모다.</p>
+
+<p><br /></p>
+
+<h3 id="우선순위-큐를-최소-힙으로-쓰는-법">우선순위 큐를 최소 힙으로 쓰는 법</h3>
+
+<p>C++의 <code class="language-plaintext highlighter-rouge">priority_queue</code>는 기본이 <strong>최대 힙</strong>이다. 다익스트라는 가장 가까운 정점부터 꺼내야 하니 반대다.</p>
+
+<p><code class="language-plaintext highlighter-rouge">greater</code>를 넘겨 비교자를 바꿀 수도 있지만, 여기서는 <strong>거리에 음수를 붙여</strong> 넣는 방식을 썼다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pq</span><span class="p">.</span><span class="n">push</span><span class="p">({</span> <span class="o">-</span><span class="n">next_cost</span><span class="p">,</span> <span class="n">next</span> <span class="p">});</span>
+<span class="p">...</span>
+<span class="kt">int</span> <span class="n">cost</span> <span class="o">=</span> <span class="o">-</span><span class="n">pq</span><span class="p">.</span><span class="n">top</span><span class="p">().</span><span class="n">first</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>부호를 뒤집어 넣으면 최대 힙이 알아서 가장 작은 원래 값을 위로 올려준다. 꺼낼 때 다시 뒤집으면 된다.
+선언이 짧아져서 자주 쓰는 방법이다.</p>
+
+<p><code class="language-plaintext highlighter-rouge">pair</code>의 첫 원소를 거리로 둔 것도 의도적이다. <code class="language-plaintext highlighter-rouge">pair</code> 비교는 첫 원소를 먼저 보기 때문에, 거리를 앞에 둬야 거리 기준으로 정렬된다.</p>
+
+<p><br /></p>
+
+<h3 id="접근-방식">접근 방식</h3>
+
+<p>일반적인 다익스트라 구현 문제다.</p>
+
+<p>먼저 길을 입력받을 때 <strong>양방향이므로 양쪽으로 저장</strong>해준다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">v</span><span class="p">[</span><span class="n">a</span><span class="p">].</span><span class="n">push_back</span><span class="p">({</span> <span class="n">b</span><span class="p">,</span><span class="n">c</span> <span class="p">});</span>
+<span class="n">v</span><span class="p">[</span><span class="n">b</span><span class="p">].</span><span class="n">push_back</span><span class="p">({</span> <span class="n">a</span><span class="p">,</span><span class="n">c</span> <span class="p">});</span>
+</code></pre></div></div>
+
+<p>이걸 한쪽만 넣으면 답이 틀리는데, 틀린 이유를 찾기가 은근히 어렵다.</p>
+
+<p>시작 지점이 <code class="language-plaintext highlighter-rouge">1</code>, 도착 지점이 <code class="language-plaintext highlighter-rouge">N</code>으로 고정이므로 1부터 다익스트라를 돌려 각 지점까지의 최단 거리를 구하고 <code class="language-plaintext highlighter-rouge">d[N]</code>을 출력했다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">now</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">cost</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>이 한 줄이 성능을 좌우한다.
+같은 정점이 큐에 여러 번 들어갈 수 있는데, 이미 더 짧은 경로로 처리된 정점이라면 건너뛴다. 이걸 빼면 불필요한 탐색이 폭증한다.</p>
+
+<p><br /></p>
+
+<h3 id="시간-복잡도">시간 복잡도</h3>
+
+<p><strong>O(E log V)</strong> 다. 간선 5만 개에 로그가 붙는 수준이라 여유롭다.</p>
+
+<p><br /></p>
+
+<h3 id="배운-점">배운 점</h3>
+
+<p>쉽게 풀 수 있었던 문제였다. 다익스트라를 오랜만에 상기시켜준 좋은 문제였다.</p>
+
+<p>정리해두면 최단 경로에서 무엇을 고를지는 이렇게 갈린다.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>상황</th>
+      <th>알고리즘</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>가중치 양수, 한 지점에서 출발</td>
+      <td>다익스트라</td>
+    </tr>
+    <tr>
+      <td>음수 간선 존재, 음수 사이클 판별 필요</td>
+      <td>벨만 포드</td>
+    </tr>
+    <tr>
+      <td>모든 정점 쌍 간의 최단 거리</td>
+      <td>플로이드 워셜</td>
+    </tr>
+    <tr>
+      <td>가중치가 전부 같음</td>
+      <td>BFS</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>마지막 경우가 <a href="/baekjoon/2026/08/23/백준-16948-데스-나이트.html">16948 데스 나이트</a>다. 이동 비용이 전부 1이면 BFS만으로 최단 거리가 나온다.</p>
+
+<p><br /></p>
+
+<hr />
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+#include &lt;queue&gt;
+#include &lt;vector&gt;
+</span>
+<span class="cp">#define INF 987654321
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">d</span><span class="p">[</span><span class="mi">50001</span><span class="p">];</span>
+<span class="n">vector</span><span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">v</span><span class="p">[</span><span class="mi">50001</span><span class="p">];</span>
+
+<span class="kt">void</span> <span class="nf">dijkstra</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">priority_queue</span> <span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">pq</span><span class="p">;</span>
+
+    <span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">pq</span><span class="p">.</span><span class="n">push</span><span class="p">({</span> <span class="mi">0</span><span class="p">,</span><span class="mi">1</span> <span class="p">});</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">pq</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">cost</span> <span class="o">=</span> <span class="o">-</span><span class="n">pq</span><span class="p">.</span><span class="n">top</span><span class="p">().</span><span class="n">first</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">now</span> <span class="o">=</span> <span class="n">pq</span><span class="p">.</span><span class="n">top</span><span class="p">().</span><span class="n">second</span><span class="p">;</span>
+
+        <span class="n">pq</span><span class="p">.</span><span class="n">pop</span><span class="p">();</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">now</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">cost</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">v</span><span class="p">[</span><span class="n">now</span><span class="p">].</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kt">int</span> <span class="n">next</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">now</span><span class="p">][</span><span class="n">i</span><span class="p">].</span><span class="n">first</span><span class="p">;</span>
+            <span class="kt">int</span> <span class="n">next_cost</span> <span class="o">=</span> <span class="n">cost</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="n">now</span><span class="p">][</span><span class="n">i</span><span class="p">].</span><span class="n">second</span><span class="p">;</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">next</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">next_cost</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+
+            <span class="n">d</span><span class="p">[</span><span class="n">next</span><span class="p">]</span> <span class="o">=</span> <span class="n">next_cost</span><span class="p">;</span>
+            <span class="n">pq</span><span class="p">.</span><span class="n">push</span><span class="p">({</span> <span class="o">-</span><span class="n">next_cost</span><span class="p">,</span> <span class="n">next</span> <span class="p">});</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">solution</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">INF</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">dijkstra</span><span class="p">();</span>
+
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">[</span><span class="n">N</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">ios_base</span><span class="o">::</span><span class="n">sync_with_stdio</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+    <span class="n">cin</span><span class="p">.</span><span class="n">tie</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span> <span class="n">cout</span><span class="p">.</span><span class="n">tie</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+
+    <span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">N</span> <span class="o">&gt;&gt;</span> <span class="n">M</span><span class="p">;</span>
+
+    <span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">M</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">a</span> <span class="o">&gt;&gt;</span> <span class="n">b</span> <span class="o">&gt;&gt;</span> <span class="n">c</span><span class="p">;</span>
+
+        <span class="n">v</span><span class="p">[</span><span class="n">a</span><span class="p">].</span><span class="n">push_back</span><span class="p">({</span> <span class="n">b</span><span class="p">,</span><span class="n">c</span> <span class="p">});</span>
+        <span class="n">v</span><span class="p">[</span><span class="n">b</span><span class="p">].</span><span class="n">push_back</span><span class="p">({</span> <span class="n">a</span><span class="p">,</span><span class="n">c</span> <span class="p">});</span>
+    <span class="p">}</span>
+
+    <span class="n">solution</span><span class="p">();</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+:ET

@@ -1,0 +1,177 @@
+I"�G<p><a href="https://www.acmicpc.net/problem/17136">17136번: 색종이 붙이기</a></p>
+
+<h3 id="어떤-문제인가">어떤 문제인가</h3>
+
+<p><code class="language-plaintext highlighter-rouge">10 × 10</code> 종이에 1이 적힌 칸들이 있다.
+크기 1×1부터 5×5까지의 색종이로 <strong>1인 칸을 전부 덮되</strong>, 색종이는 겹칠 수 없고 각 크기마다 5장씩만 쓸 수 있다.</p>
+
+<p>이때 필요한 색종이의 <strong>최소 개수</strong>를 구하고, 덮을 수 없으면 <code class="language-plaintext highlighter-rouge">-1</code>을 출력하는 문제다.</p>
+
+<p><br /></p>
+
+<h3 id="왜-백트래킹인가">왜 백트래킹인가</h3>
+
+<p>색종이를 어디에 어떤 크기로 붙일지에 따라 결과가 달라지고, <strong>먼저 큰 걸 붙이는 게 항상 이득이라는 보장이 없다.</strong>
+5×5를 붙여서 5장을 다 써버리면 나중에 애매하게 남은 칸들을 1×1로 메워야 할 수도 있다.</p>
+
+<p>그리디로 안 되고 경우의 수도 규칙이 없으니 <strong>전부 시도해보되, 가망 없으면 일찍 접는</strong> 백트래킹이 맞다.</p>
+
+<p><br /></p>
+
+<h3 id="어디에-붙일지를-고민하지-않는-요령">어디에 붙일지를 고민하지 않는 요령</h3>
+
+<p>모든 칸에 모든 크기를 시도하면 경우의 수가 감당이 안 된다.
+그런데 여기서 한 가지 성질을 쓸 수 있다.</p>
+
+<p><strong>왼쪽 위부터 순서대로 훑을 때 처음 만나는 1은 반드시 어떤 색종이의 왼쪽 위 모서리다.</strong></p>
+
+<p>그 칸보다 앞선 칸은 이미 다 처리됐으니, 그 칸을 덮는 색종이는 거기서 오른쪽 아래로만 뻗을 수 있기 때문이다.
+그래서 “어디에 붙일까”를 고민할 필요 없이 <strong>다음 1을 찾아 거기에 크기 5부터 1까지만 시도</strong>하면 된다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">])</span> <span class="p">{</span>
+    <span class="n">x</span><span class="o">++</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">y</span><span class="o">++</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">min</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">count</span><span class="p">);</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>1을 찾지 못하고 끝까지 갔다면 전부 덮었다는 뜻이므로, 그때의 개수로 최솟값을 갱신하고 돌아간다.</p>
+
+<p><br /></p>
+
+<h3 id="가지치기">가지치기</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">result</span> <span class="o">&lt;=</span> <span class="n">count</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>이미 찾은 답보다 색종이를 많이 쓰고 있다면 더 볼 필요가 없다. 이 한 줄이 탐색량을 크게 줄인다.</p>
+
+<p>그리고 붙였다가 되돌리는 부분이 백트래킹의 핵심이다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">paper</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">++</span><span class="p">;</span>
+<span class="n">changeMap</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="n">dfs</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+<span class="n">paper</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">--</span><span class="p">;</span>
+<span class="n">changeMap</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>색종이를 붙이면 그 영역을 0으로 만들고 재귀로 내려간다. 돌아오면 <strong>반드시 1로 되돌리고 색종이 개수도 복구</strong>해야 한다.
+이 복구를 빼먹으면 다른 분기가 오염된 판을 물려받는다.</p>
+
+<p>각 크기를 5장까지만 쓸 수 있다는 조건은 <code class="language-plaintext highlighter-rouge">paper[i] == 5</code> 검사로 처리했다. 이 조건을 빼먹으면 답이 실제보다 작게 나온다.</p>
+
+<p><br /></p>
+
+<h3 id="시간-복잡도">시간 복잡도</h3>
+
+<p>정확한 상한을 계산하기는 어려운 유형이다.
+칸이 100개, 크기가 5가지라 이론상 경우의 수가 매우 크지만, 실제로는</p>
+
+<ul>
+  <li>다음 1로 자동으로 건너뛰는 구조</li>
+  <li><code class="language-plaintext highlighter-rouge">result &lt;= count</code> 가지치기</li>
+  <li>각 크기 5장 제한</li>
+</ul>
+
+<p>이 셋이 겹쳐서 탐색 공간이 크게 줄어든다. 판이 10×10으로 고정이라 제한 안에 들어온다.</p>
+
+<p><br /></p>
+
+<h3 id="배운-점">배운 점</h3>
+
+<p>생각보다 오래 걸린 문제였다.
+완전 탐색을 한다는 점은 생각했는데 <strong>이를 구현하는 데에서 오래 걸렸고</strong>, 자잘한 오타도 한몫했다.</p>
+
+<p>특히 “다음 1을 찾아 거기서만 시도한다”는 구조를 떠올리기 전까지는, 모든 칸 × 모든 크기를 도는 코드를 짜다가 스스로 꼬였다.
+아이디어가 정리되지 않은 상태에서 코드부터 쓰기 시작한 게 원인이었다.</p>
+
+<p>생각한 아이디어를 구현할 때는 <strong>차근차근 접근해야 한다</strong>는 점을 인지하자.
+같은 백트래킹 유형인 <a href="/baekjoon/2026/08/04/백준-1062-가르침.html">1062 가르침</a>도 “무엇을 기준으로 분기할 것인가”를 먼저 정하고 나니 코드가 짧아졌다.</p>
+
+<p><br /></p>
+
+<hr />
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+#include &lt;queue&gt;
+#include &lt;cstring&gt;
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="n">A</span><span class="p">[</span><span class="mi">10</span><span class="p">][</span><span class="mi">10</span><span class="p">],</span> <span class="n">result</span> <span class="o">=</span> <span class="mf">1e9</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">paper</span><span class="p">[</span><span class="mi">6</span><span class="p">];</span>
+
+<span class="kt">bool</span> <span class="nf">checkSquare</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">,</span> <span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">size</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">y</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">y</span> <span class="o">+</span> <span class="n">size</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">x</span> <span class="o">+</span> <span class="n">size</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">])</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">changeMap</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">,</span> <span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">size</span><span class="p">,</span> <span class="kt">int</span> <span class="n">tf</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">y</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">y</span> <span class="o">+</span> <span class="n">size</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">x</span> <span class="o">+</span> <span class="n">size</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">dfs</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">,</span> <span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">count</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">])</span> <span class="p">{</span>
+        <span class="n">x</span><span class="o">++</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">y</span><span class="o">++</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">min</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">count</span><span class="p">);</span>
+                <span class="k">return</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">result</span> <span class="o">&lt;=</span> <span class="n">count</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="o">||</span> <span class="n">x</span> <span class="o">+</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">paper</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">5</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">checkSquare</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span> <span class="k">continue</span><span class="p">;</span>
+
+        <span class="n">paper</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">++</span><span class="p">;</span>
+        <span class="n">changeMap</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="n">dfs</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="n">paper</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">--</span><span class="p">;</span>
+        <span class="n">changeMap</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">solution</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">dfs</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">result</span> <span class="o">==</span> <span class="mf">1e9</span><span class="p">)</span> <span class="n">result</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">ios_base</span><span class="o">::</span><span class="n">sync_with_stdio</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+    <span class="n">cin</span><span class="p">.</span><span class="n">tie</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span> <span class="n">cout</span><span class="p">.</span><span class="n">tie</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">];</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">solution</span><span class="p">();</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+:ET

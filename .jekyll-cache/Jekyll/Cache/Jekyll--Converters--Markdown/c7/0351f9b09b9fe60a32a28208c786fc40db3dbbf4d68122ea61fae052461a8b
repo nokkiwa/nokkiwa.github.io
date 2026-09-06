@@ -1,0 +1,294 @@
+I"L�<p><a href="https://www.acmicpc.net/problem/20057">20057번: 마법사 상어와 토네이도</a></p>
+
+<h3 id="어떤-문제인가">어떤 문제인가</h3>
+
+<p><code class="language-plaintext highlighter-rouge">N × N</code> 격자의 각 칸에 모래가 있고, 토네이도가 <strong>가운데에서 시작해 달팽이 모양으로</strong> 격자를 돌며 모래를 흩뿌린다.
+토네이도가 왼쪽 위 끝에 도달했을 때, <strong>격자 밖으로 나간 모래의 총량</strong>을 구하는 문제다.</p>
+
+<p><code class="language-plaintext highlighter-rouge">N</code>은 3 이상 499 이하의 홀수다.</p>
+
+<p><br /></p>
+
+<h3 id="알고리즘이-아니라-구현-문제다">알고리즘이 아니라 구현 문제다</h3>
+
+<p>이 문제에는 떠올려야 할 알고리즘이 없다.
+문제에 주어진 규칙을 <strong>틀리지 않고 그대로 옮기는 것</strong>이 전부다. 그래서 오히려 시간이 오래 걸린다.</p>
+
+<p>구현할 것은 두 가지다.</p>
+
+<ol>
+  <li>토네이도의 이동 (달팽이 경로)</li>
+  <li>모래의 이동 (비율에 따른 분배)</li>
+</ol>
+
+<p><br /></p>
+
+<h3 id="1-달팽이-이동에서-찾은-규칙">1. 달팽이 이동에서 찾은 규칙</h3>
+
+<p>토네이도는 왼쪽 → 아래 → 오른쪽 → 위 순으로 돌면서 이동 거리가 점점 늘어난다.
+직접 그려보면 규칙이 보인다.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1칸 왼쪽 → 1칸 아래 → 2칸 오른쪽 → 2칸 위 →
+3칸 왼쪽 → 3칸 아래 → 4칸 오른쪽 → 4칸 위 → ...
+</code></pre></div></div>
+
+<p>즉 <strong>한 바퀴마다 이동 칸 수가 2씩 늘어나고, 오른쪽·위쪽은 왼쪽·아래쪽보다 1칸씩 더 간다.</strong>
+이걸 <code class="language-plaintext highlighter-rouge">move</code> 변수 하나로 표현했다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">step1</span><span class="p">(</span><span class="n">step</span><span class="p">);</span>        <span class="c1">// 왼쪽</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+
+    <span class="n">step2</span><span class="p">(</span><span class="n">step</span><span class="p">);</span>        <span class="c1">// 아래</span>
+    <span class="n">step3</span><span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>    <span class="c1">// 오른쪽</span>
+    <span class="n">step4</span><span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>    <span class="c1">// 위</span>
+
+    <span class="n">step</span> <span class="o">+=</span> <span class="mi">2</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>도착 지점(왼쪽 위 모서리)에는 항상 <strong>왼쪽으로 이동하는 중</strong>에 닿기 때문에, <code class="language-plaintext highlighter-rouge">step1</code>을 끝낸 뒤 좌표를 확인해 멈춰준다.</p>
+
+<p><br /></p>
+
+<h3 id="2-격자-밖-모래를-세는-요령">2. 격자 밖 모래를 세는 요령</h3>
+
+<p>모래가 격자 밖으로 날아가는 걸 매번 <code class="language-plaintext highlighter-rouge">if</code>로 검사하면 조건문이 폭발한다.
+그래서 <strong>배열 자체를 <code class="language-plaintext highlighter-rouge">N+4</code> 크기로 잡고 실제 격자를 안쪽에 두는</strong> 방식을 썼다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span>
+        <span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">];</span>
+</code></pre></div></div>
+
+<p>모래가 퍼지는 최대 거리가 3칸이므로 사방에 2칸씩 여유를 두면 범위를 벗어나는 접근이 없다.
+마지막에 <strong>바깥 테두리에 쌓인 모래를 전부 더하면</strong> 그게 답이다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">4</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">4</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+        <span class="n">result</span> <span class="o">+=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">];</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>경계 검사를 배열 크기로 대신한 셈이다. 격자 문제에서 자주 쓰이는 방법이다.</p>
+
+<p><br /></p>
+
+<h3 id="3-남은-모래α-처리">3. 남은 모래(α) 처리</h3>
+
+<p>각 비율(1%, 7%, 2%, 10%, 5%)로 나눠준 뒤 <strong>남은 모래는 전부 한 칸으로</strong> 간다.
+비율 계산에서 소수점이 버려지므로, 나눠준 양을 하나씩 빼서 남은 값을 구해야 한다.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">tmp</span> <span class="o">=</span> <span class="n">sand</span><span class="p">;</span>
+<span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">;</span>
+<span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">);</span>
+<span class="p">...</span>
+<span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">tmp</span><span class="p">;</span>     <span class="c1">// 남은 모래</span>
+</code></pre></div></div>
+
+<p>여기서 주의할 점이 있다. <code class="language-plaintext highlighter-rouge">sand * 0.01</code>은 실수 연산이라 <code class="language-plaintext highlighter-rouge">300 * 0.01</code>이 <code class="language-plaintext highlighter-rouge">2.9999...</code>로 나올 여지가 있고, 그러면 잘라낼 때 3이 아니라 2가 된다.
+<code class="language-plaintext highlighter-rouge">sand * 1 / 100</code>처럼 <strong>정수 연산으로 계산하는 편이 안전하다.</strong></p>
+
+<p>모래 이동은 방향마다 좌표 부호가 달라져서, 깔끔하게 표현할 방법을 찾지 못하고 네 방향을 하나씩 구현했다.</p>
+
+<p><br /></p>
+
+<h3 id="시간-복잡도">시간 복잡도</h3>
+
+<p>토네이도가 모든 칸을 정확히 한 번씩 지나가고, 칸마다 상수 개(9곳)에 모래를 뿌린다.
+따라서 <strong>O(N²)</strong> 이다. N이 499면 약 25만 칸이라 여유롭다.</p>
+
+<p><br /></p>
+
+<h3 id="배운-점">배운 점</h3>
+
+<p>역시 구현 문제는 시간이 오래 걸리는 유형이다.
+구현 자체는 어렵지 않은데 사실상 노가다라 시간이 굉장히 오래 걸렸다.</p>
+
+<p>그리고 <strong>문제를 잘못 읽는 바람에 모래의 이동 조건을 잘못 생각한</strong> 점도 있었다.
+비율표가 왼쪽으로 이동할 때 기준이라는 걸 놓치고, 네 방향에 같은 좌표를 그대로 썼다가 한참을 헤맸다.</p>
+
+<p>구현 문제를 풀 때는 <strong>조건을 제대로 이해하는 것이 가장 중요하다</strong>는 점을 인지하자.
+코드를 쓰기 전에 방향 하나를 종이에 그려서 좌표를 확정하고, 나머지는 거기서 회전시켜 옮기는 순서가 확실했을 것 같다.</p>
+
+<p><br /></p>
+
+<hr />
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="n">N</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">A</span><span class="p">[</span><span class="mi">504</span><span class="p">][</span><span class="mi">504</span><span class="p">];</span>
+
+<span class="kt">void</span> <span class="nf">step1</span><span class="p">(</span><span class="kt">int</span> <span class="n">move</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">move</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">sand</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">];</span>
+        <span class="kt">int</span> <span class="n">tmp</span> <span class="o">=</span> <span class="n">sand</span><span class="p">;</span>
+
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">2</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">2</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.05</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.05</span><span class="p">);</span>
+
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">tmp</span><span class="p">;</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+        <span class="n">x</span><span class="o">--</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">step2</span><span class="p">(</span><span class="kt">int</span> <span class="n">move</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">move</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">sand</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span><span class="p">];</span>
+        <span class="kt">int</span> <span class="n">tmp</span> <span class="o">=</span> <span class="n">sand</span><span class="p">;</span>
+
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">2</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">2</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">3</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.05</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.05</span><span class="p">);</span>
+
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">2</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">+=</span> <span class="n">tmp</span><span class="p">;</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">y</span><span class="o">++</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">step3</span><span class="p">(</span><span class="kt">int</span> <span class="n">move</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">while</span><span class="p">(</span><span class="n">move</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">sand</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+        <span class="kt">int</span> <span class="n">tmp</span> <span class="o">=</span> <span class="n">sand</span><span class="p">;</span>
+
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">2</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">2</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.05</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.05</span><span class="p">);</span>
+
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">tmp</span><span class="p">;</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">x</span><span class="o">++</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">step4</span><span class="p">(</span><span class="kt">int</span> <span class="n">move</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">move</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">sand</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span><span class="p">];</span>
+        <span class="kt">int</span> <span class="n">tmp</span> <span class="o">=</span> <span class="n">sand</span><span class="p">;</span>
+
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.01</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.07</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">2</span><span class="p">][</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">2</span><span class="p">][</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">);</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">3</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sand</span> <span class="o">*</span> <span class="mf">0.05</span><span class="p">;</span>
+        <span class="n">tmp</span> <span class="o">-=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">sand</span> <span class="o">*</span> <span class="mf">0.05</span><span class="p">);</span>
+
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">2</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">+=</span> <span class="n">tmp</span><span class="p">;</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">y</span><span class="o">--</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">solution</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span> <span class="o">+</span> <span class="mi">4</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span> <span class="o">+</span> <span class="mi">4</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">step</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">step1</span><span class="p">(</span><span class="n">step</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+
+        <span class="n">step2</span><span class="p">(</span><span class="n">step</span><span class="p">);</span>
+        <span class="n">step3</span><span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="n">step4</span><span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+
+        <span class="n">step</span> <span class="o">+=</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">4</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">4</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">];</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">ios_base</span><span class="o">::</span><span class="n">sync_with_stdio</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+    <span class="n">cin</span><span class="p">.</span><span class="n">tie</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span> <span class="n">cout</span><span class="p">.</span><span class="n">tie</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+
+    <span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">N</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">N</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">];</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">solution</span><span class="p">();</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+:ET
