@@ -54,34 +54,68 @@
     </div>
 </div>
 
+  {%- assign is_first_page = true -%}
+  {%- if include.has_pagination and include.current_page != 1 -%}
+    {%- assign is_first_page = false -%}
+  {%- endif -%}
+
+  {%- comment -%} 대표 글은 1페이지에만, featured_order 순으로 {%- endcomment -%}
+  {%- assign featured = site.posts | where: "featured", true | sort: "featured_order" -%}
+
+  {%- comment -%} 같은 페이지 안에서 알고리즘 풀이를 뒤로 모아 첫 화면 독점을 막는다 {%- endcomment -%}
+  {%- assign latest = paginator.posts | where_exp: "p", "p.categories.first != 'baekjoon' and p.categories.first != 'programmers'" -%}
+  {%- assign algo   = paginator.posts | where_exp: "p", "p.categories.first == 'baekjoon' or p.categories.first == 'programmers'" -%}
+  {%- comment -%} 대표 글은 1페이지 상단에서 한 번만 보여준다(페이지 간 중복 방지) {%- endcomment -%}
+  {%- assign latest = latest | where_exp: "p", "p.featured != true" -%}
+
+  {%- if is_first_page and featured.size > 0 -%}
   <header class="post-header home">
-    <div class="post-title">Articles</div>
+    <div class="post-title">문제 해결 기록</div>
+    <div class="section-lead">서버를 운영하며 직접 마주친 에러와 그 해결 과정입니다.</div>
   </header>
 
   <div class="post-content">
-    {%- if paginator.posts.size > 0 -%}
     <ul class="post-list">
-      {%- for post in paginator.posts -%}
-      <li class="post-list-item post-category-{{post.categories}}">
-        <a class="post-link-card" href="{{ post.url | relative_url }}">
-          {% if post.content contains '<img' %}
-          <div class="post-thumb-wrap">
-            {% assign first_img_tag = post.content | split: '<img' | slice: 1, 1 | first | split: '>' | first %}
-            {% assign src = first_img_tag | split: 'src="' | last | split: '"' | first %}
-            <img src="{{ src }}" class="post-thumb" alt="{{ post.title }}" loading="lazy" width="130" height="130">
-          </div>
-          {% endif %}
-          <div class="post-info">
-            <div class="post-info-title">{{ post.title | escape }}</div>
-            <div class="post-info-date">{{ post.date | date: "%Y/%m/%d" }}</div>
-            {% if site.show_excerpts %}
-              <div class="post-excerpt">{{ post.excerpt }}</div>
-            {% endif %}
-          </div>
-        </a>
-      </li>
+      {%- for post in featured -%}
+        {%- include post_card.html post=post featured=true -%}
       {%- endfor -%}
     </ul>
+  </div>
+  {%- endif -%}
+
+  {%- if latest.size > 0 -%}
+  <header class="post-header home">
+    <div class="post-title">{% if is_first_page %}최신 글{% else %}Articles{% endif %}</div>
+  </header>
+
+  <div class="post-content">
+    <ul class="post-list">
+      {%- for post in latest -%}
+        {%- include post_card.html post=post -%}
+      {%- endfor -%}
+    </ul>
+  </div>
+  {%- endif -%}
+
+  {%- if algo.size > 0 -%}
+  <header class="post-header home">
+    <div class="post-title">알고리즘 풀이</div>
+    <div class="section-lead">백준·프로그래머스 문제를 풀면서 정리한 접근 방법과 시간 복잡도입니다.</div>
+  </header>
+
+  <div class="post-content">
+    <ul class="post-list">
+      {%- for post in algo -%}
+        {%- include post_card.html post=post -%}
+      {%- endfor -%}
+    </ul>
+  </div>
+  {%- endif -%}
+
+  <div class="post-content">
+    {%- if paginator.posts.size == 0 -%}
+    <p>게시글이 없습니다.</p>
+    {%- endif -%}
 
 <!-- 페이지네이션 UI (숫자 버전 - 축약형) -->
 {%- if include.has_pagination and include.total_pages > 1 -%}
@@ -155,11 +189,6 @@
   {%- endif -%}
 </div>
 {%- endif -%}
-
-    
-    {%- else -%}
-    <p>게시글이 없습니다.</p>
-    {%- endif -%}
   </div>
 </article>
 

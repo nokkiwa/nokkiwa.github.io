@@ -1,0 +1,18 @@
+<li class="post-list-item post-category-{{ include.post.categories }}{% if include.featured %} featured-item{% endif %}">
+  <a class="post-link-card" href="{{ include.post.url | relative_url }}">
+    {% if include.post.content contains '<img' %}
+    <div class="post-thumb-wrap">
+      {% assign first_img_tag = include.post.content | split: '<img' | slice: 1, 1 | first | split: '>' | first %}
+      {% assign src = first_img_tag | split: 'src="' | last | split: '"' | first %}
+      <img src="{{ src }}" class="post-thumb" alt="{{ include.post.title }}" loading="lazy" width="130" height="130">
+    </div>
+    {% endif %}
+    <div class="post-info">
+      <div class="post-info-title">{{ include.post.title | escape }}</div>
+      <div class="post-info-date">{% if include.featured %}{{ include.post.categories | first }} · {% endif %}{{ include.post.date | date: "%Y/%m/%d" }}</div>
+      {% if include.featured or site.show_excerpts %}
+      <div class="post-excerpt">{{ include.post.excerpt | strip_html | normalize_whitespace | truncate: 110 }}</div>
+      {% endif %}
+    </div>
+  </a>
+</li>
