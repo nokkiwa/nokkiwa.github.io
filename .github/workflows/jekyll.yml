@@ -10,9 +10,10 @@ on:
     branches: ["main"]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-  # 예약 발행: 매일 09:05 KST(00:05 UTC)에 다시 빌드해서 날짜가 된 글을 공개
+  # 예약 발행: 하루 3번(09:23·17:23·01:23 KST) 다시 빌드해서 날짜가 된 글을 공개
+  # 정각 근처는 GitHub 예약 실행이 밀리거나 빠지기 쉬워서 23분으로 둠
   schedule:
-    - cron: "5 0 * * *"
+    - cron: "23 0,8,16 * * *"
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
