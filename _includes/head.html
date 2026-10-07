@@ -21,14 +21,20 @@
     목록·소개·정책 페이지처럼 글이 아닌 곳은 사이트 기본 설명을 쓴다.
   {%- endcomment -%}
   {%- if page.date -%}
-    {%- assign meta_body = page.content | replace: '</h1>', ' ' | replace: '</h2>', ' ' | replace: '</p>', ' ' | replace: '<br>', ' ' -%}
-    {%- assign meta_desc = meta_body | strip_html | strip_newlines | truncatewords: 28 | escape -%}
+    {%- assign meta_body = page.content | replace: '</h1>', ' ' | replace: '</h2>', ' ' | replace: '</h3>', ' ' | replace: '</p>', ' ' | replace: '</pre>', ' ' | replace: '</li>', ' ' | replace: '<br>', ' ' -%}
+    {%- assign meta_desc = meta_body | strip_html | strip_newlines | truncatewords: 28 -%}
   {%- elsif page.description -%}
-    {%- assign meta_desc = page.description | escape -%}
+    {%- assign meta_desc = page.description -%}
   {%- endif -%}
+  {%- comment -%}
+    meta_desc는 평문으로 둔다. kramdown이 남긴 엔티티를 되돌리고(&amp;는 마지막),
+    출력할 때 HTML 속성은 escape, JSON-LD는 jsonify로 한 번만 처리한다.
+    JSON에 escape를 쓰면 본문의 역슬래시(\x 등)가 잘못된 JSON 이스케이프가 된다.
+  {%- endcomment -%}
+  {%- assign meta_desc = meta_desc | default: site.description | strip_newlines | replace: '&lt;', '<' | replace: '&gt;', '>' | replace: '&quot;', '"' | replace: '&#39;', "'" | replace: '&amp;', '&' -%}
   <meta
     name="description"
-    content="{{ meta_desc | default: site.description | strip_newlines | escape }}"
+    content="{{ meta_desc | escape }}"
   />
   <meta name="author" content="{{ site.author | escape }}" />
 
@@ -49,7 +55,7 @@
   <meta property="og:title" content="{{ page.title | default: site.title | escape }}" />
   <meta
     property="og:description"
-    content="{{ meta_desc | default: site.description | strip_newlines | escape }}"
+    content="{{ meta_desc | escape }}"
   />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="{{ page.url | absolute_url }}" />
@@ -72,15 +78,15 @@
         "@type": "WebPage",
         "@id": "{{ page.url | absolute_url }}"
       },
-      "headline": "{{ page.title | escape }}",
-      "description": "{{ meta_desc | default: site.description | strip_newlines | escape | truncate: 200 }}",
+      "headline": {{ page.title | default: site.title | jsonify | replace: '</', '<\/' }},
+      "description": {{ meta_desc | truncate: 200 | jsonify | replace: '</', '<\/' }},
       "author": {
         "@type": "Person",
-        "name": "{{ site.author | default: site.title | escape }}"
+        "name": {{ site.author | default: site.title | jsonify }}
       },
       "publisher": {
         "@type": "Organization",
-        "name": "{{ site.title | escape }}",
+        "name": {{ site.title | jsonify }},
         "logo": {
           "@type": "ImageObject",
           "url": "https://nokkiwa.github.io/favicon.ico"
