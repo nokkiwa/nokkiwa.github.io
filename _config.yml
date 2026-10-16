@@ -39,6 +39,7 @@ timezone: Asia/Seoul
 plugins:
   - jekyll-feed
   - jekyll-paginate
+  - jekyll-redirect-from
 paginate: 20
 paginate_path: "/page:num/"
 category_dir: category/
