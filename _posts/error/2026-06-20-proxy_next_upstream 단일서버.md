@@ -1,4 +1,5 @@
 ---
+published: false
 comments: true
 layout: post
 title: nginx proxy_next_upstream 단일 서버 트러블슈팅
