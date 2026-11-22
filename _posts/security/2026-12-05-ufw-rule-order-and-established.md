@@ -138,6 +138,16 @@ sudo ufw delete deny from 141.94.96.x
 sudo ufw insert 1 deny from 141.94.96.x
 ```
 
+이 글을 정리하면서 내 서버에서도 바로 옮겼다. 순서가 이렇게 바뀌었다.
+
+```
+[ 1] Anywhere                   DENY IN     141.94.96.x
+[ 2] Anywhere                   DENY IN     117.144.80.x
+[ 3] 22                         ALLOW IN    Anywhere
+```
+
+`iptables -S ufw-user-input`에서도 두 차단 줄이 허용 규칙보다 앞에 온다. 이제 이 두 IP는 어느 포트로 오든 맨 앞에서 버려진다.
+
 이번 일로 정한 습관이다.
 
 - **IP 차단은 항상 `ufw insert 1`.** 그냥 `ufw deny`는 목록 맨 뒤에 붙는다.
