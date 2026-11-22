@@ -1,4 +1,5 @@
 ---
+published: false
 comments: true
 layout: post
 title: 서치콘솔 '문자열의 이스케이프 시퀀스가 잘못됨', Jekyll JSON-LD에 escape를 쓰면 생기는 일

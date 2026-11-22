@@ -1,4 +1,5 @@
 ---
+published: false
 comments: true
 layout: post
 title: Go 1.22 루프 변수 변경, 컴파일러 버전이 아니라 go.mod가 정한다

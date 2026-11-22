@@ -1,4 +1,5 @@
 ---
+published: false
 comments: true
 layout: post
 title: HikariPool Connection is not available, REQUIRES_NEW가 커넥션 풀을 막는 경우

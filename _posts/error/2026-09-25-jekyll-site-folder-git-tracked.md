@@ -1,4 +1,5 @@
 ---
+published: false
 comments: true
 layout: post
 title: Jekyll 빌드 한 번에 git 변경 파일 1,790개가 생기는 문제 (_site 추적)

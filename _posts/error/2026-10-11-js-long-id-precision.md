@@ -1,4 +1,5 @@
 ---
+published: false
 comments: true
 layout: post
 title: 백엔드 Long ID가 프론트에서 끝자리가 바뀌는 문제 (JSON 숫자 정밀도)

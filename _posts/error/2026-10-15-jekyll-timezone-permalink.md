@@ -1,4 +1,5 @@
 ---
+published: false
 comments: true
 layout: post
 title: Jekyll timezone 한 줄 추가했더니 글 주소가 하루씩 밀리는 문제

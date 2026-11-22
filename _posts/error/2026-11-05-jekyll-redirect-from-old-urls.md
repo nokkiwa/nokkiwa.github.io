@@ -1,4 +1,5 @@
 ---
+published: false
 comments: true
 layout: post
 title: 글 날짜를 고쳤더니 옛 주소가 전부 404, GitHub Pages에서 jekyll-redirect-from으로 옮기기

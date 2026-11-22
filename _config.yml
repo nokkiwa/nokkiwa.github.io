@@ -19,12 +19,12 @@
 # in the templates via {{ site.myvariable }}.
 
 title: KLOG
-tagline: 개발하며 만난 에러와 해결 기록
+tagline: 홈서버·셀프호스팅 실전 기록
 author: Nokkiwa
 email: Nokkiwa@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-  서버를 운영하면서 직접 마주친 에러와 그 해결 과정을 기록합니다.
-  Spring Boot·JPA·Docker·네트워크·Go 문제 해결 기록과 토이 프로젝트 회고록을 담고 있습니다.
+  집에서 24시간 돌리는 우분투 홈서버를 직접 운영하며 겪은 일을 기록합니다.
+  Docker·nginx 구성, 서버 보안 사고 대응, 장애 원인 추적을 실제 로그와 화면으로 남깁니다.
 baseurl: / # the subpath of your site, e.g. /blog
 url: "https://nokkiwa.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 github_username: Nokkiwa
@@ -40,10 +40,11 @@ plugins:
   - jekyll-feed
   - jekyll-paginate
   - jekyll-redirect-from
-paginate: 20
+paginate: 100 # 한 페이지에 전부 — /page2/ 같은 목록뿐인 페이지를 만들지 않음
 paginate_path: "/page:num/"
 category_dir: category/
 tag_dir: tag/
+exclude: [README.md] # 저장소 안내문이 /README.md로 공개되지 않게
 
 # Exclude from processing.
 # The following items will not be processed, by default.

@@ -1,4 +1,5 @@
 ---
+published: false
 comments: true
 layout: post
 title: 파이썬 모듈을 import만 했는데 운영 로그 파일이 회전된 문제

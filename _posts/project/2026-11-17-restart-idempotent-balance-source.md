@@ -1,4 +1,5 @@
 ---
+published: false
 comments: true
 layout: post
 title: 재시작 40번에 중복 주문 0건, 잔고를 단일 출처로 둔 자동매매 봇과 남은 흠 하나

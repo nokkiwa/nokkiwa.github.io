@@ -1,4 +1,5 @@
 ---
+published: false
 comments: true
 layout: post
 title: MySQL 이모지 저장 에러 Incorrect string value, 테이블만 바꾸면 안 되는 이유

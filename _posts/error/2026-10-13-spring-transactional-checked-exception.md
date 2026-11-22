@@ -1,4 +1,5 @@
 ---
+published: false
 comments: true
 layout: post
 title: 스프링 @Transactional, checked 예외는 롤백되지 않는다

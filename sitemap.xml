@@ -8,6 +8,11 @@ is_sitemap: true
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
                             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 {% assign now = "now" | date: "%Y-%m-%dT%H:%M:%S+09:00" %}
+{%- comment -%} 홈·고정 페이지(소개·연락처·개인정보·약관)도 넣는다 {%- endcomment -%}
+  <url><loc>{{ site.url }}/</loc></url>
+{% for p in site.pages %}{% if p.layout == "page" %}
+  <url><loc>{{ site.url }}{{ p.url }}</loc></url>
+{% endif %}{% endfor %}
 {% for post in site.posts %}
   <url>
     <loc>{{ site.url }}{{ post.url }}</loc>

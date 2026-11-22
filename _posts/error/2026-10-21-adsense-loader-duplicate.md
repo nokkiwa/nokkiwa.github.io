@@ -1,4 +1,5 @@
 ---
+published: false
 comments: true
 layout: post
 title: 애드센스 adsbygoogle.js가 페이지에 두 번 로드되던 문제

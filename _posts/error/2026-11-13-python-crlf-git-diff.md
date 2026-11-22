@@ -1,4 +1,5 @@
 ---
+published: false
 comments: true
 layout: post
 title: 파이썬으로 CSS 37줄 추가했는데 git diff가 2,000줄, CRLF 파일과 newline 옵션

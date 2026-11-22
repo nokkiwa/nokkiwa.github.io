@@ -1,4 +1,5 @@
 ---
+published: false
 comments: true
 layout: post
 title: 스프링 @Transactional이 같은 클래스 안에서 호출하면 안 먹는 이유
