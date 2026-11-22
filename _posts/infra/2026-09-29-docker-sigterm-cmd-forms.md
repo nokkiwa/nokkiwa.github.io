@@ -4,13 +4,14 @@ layout: post
 title: docker stop이 10초씩 걸리는 이유, CMD 형태 5가지로 직접 비교해보기
 date: 2026-09-29 09:00:00 +0900
 category: infra
+last_modified_at: 2026-11-22 18:00:00 +0900
 ---
 
 `docker stop`을 치면 어떤 컨테이너는 바로 꺼지고 어떤 컨테이너는 정확히 10초를 기다린 뒤에 꺼진다. 10초짜리는 앱이 종료 신호(SIGTERM)를 못 받아서 결국 강제 종료(SIGKILL)된 것이다. 이러면 앱의 종료 처리가 돌지 않는다. 처리 중이던 요청, 커넥션 정리, 버퍼 플러시가 전부 날아간다.
 
 "shell form으로 쓰면 신호가 안 간다"는 설명이 많은데, 직접 해보니 항상 그렇지는 않았다. CMD를 5가지로 바꿔가며 비교해봤다.
 
-### 1. 테스트 앱
+## 테스트 앱
 
 SIGTERM을 받으면 메시지를 찍고 정상 종료하는 파이썬 앱이다.
 
@@ -29,7 +30,7 @@ while True:
 
 베이스 이미지는 `python:3.12-alpine`이고, 테스트 환경은 Docker 28.3이다.
 
-### 2. 비교한 CMD
+## 비교한 CMD
 
 ```dockerfile
 # exec     : CMD ["python", "-u", "app.py"]
@@ -47,7 +48,7 @@ echo "[start.sh] 준비 작업"
 python -u app.py        # start_exec.sh는 여기만 exec python -u app.py
 ```
 
-### 3. 결과
+## 결과
 
 | CMD | PID 1 | docker stop 시간 | 종료 코드 | 앱이 SIGTERM 받음 |
 |---|---|---|---|---|
@@ -59,7 +60,7 @@ python -u app.py        # start_exec.sh는 여기만 exec python -u app.py
 
 종료 코드 137은 128 + 9(SIGKILL), 즉 강제 종료됐다는 뜻이다.
 
-### 4. 핵심은 "PID 1이 누구냐"
+## 핵심은 "PID 1이 누구냐"
 
 `docker stop`은 컨테이너의 **PID 1에게만** SIGTERM을 보낸다. PID 1이 셸이면 셸이 신호를 받는다. 셸은 자식 프로세스인 앱에 신호를 넘겨주지 않는다. 게다가 리눅스는 PID 1에게 기본 신호 동작을 적용하지 않아서, 셸은 SIGTERM을 받고도 죽지 않고 버틴다. 그렇게 10초가 지나면 SIGKILL이 날아온다.
 
@@ -67,7 +68,7 @@ python -u app.py        # start_exec.sh는 여기만 exec python -u app.py
 
 이 동작은 셸마다 다르다. 베이스 이미지를 바꾸거나 CMD에 뭔가 한 줄 덧붙이는 순간 조용히 깨질 수 있다. 결국 **shell form에 기대지 말고 exec form을 쓰는 게 맞다.**
 
-### 5. --init(tini)만으로는 부족했다
+## --init(tini)만으로는 부족했다
 
 신호 문제의 해결책으로 `docker run --init`(tini)이 자주 나온다. 스크립트 케이스에 붙여봤다.
 
@@ -80,13 +81,46 @@ script + --init + TINI_KILL_PROCESS_GROUP=1 : 0.3초, 종료 코드 143, 앱 로
 
 tini가 프로세스 그룹 전체에 신호를 보내게(`TINI_KILL_PROCESS_GROUP=1`, 또는 `tini -g`) 해야 앱까지 신호가 닿았다.
 
-### 6. 정리
+## 내 홈서버 컨테이너들은 어떨까 (11월 추가)
+
+실험을 마치고 홈서버에서 돌고 있는 컨테이너들의 PID 1을 하나씩 확인했다. 컨테이너를 멈추지 않고 볼 수 있는 방법이다. 이름은 가렸다.
+
+```bash
+for c in $(docker ps --format '{% raw %}{{.Names}}{% endraw %}'); do
+  echo "$c: $(docker exec $c cat /proc/1/cmdline | tr '\0' ' ')"
+done
+```
+
+| 컨테이너 | 설정(ENTRYPOINT / CMD) | 실제 PID 1 |
+|---|---|---|
+| 앱B-서버 (스프링) | `["java","-jar","/app.jar"]` | `java -jar /app.jar` |
+| 웹 (nginx) | `["/docker-entrypoint.sh"]` + `["nginx","-g","daemon off;"]` | `nginx: master process` |
+| 다른 프로젝트 앱 (node) | `["docker-entrypoint.sh"]` + `["node","server.js"]` | `next-server` |
+| DB (mysql) | `["docker-entrypoint.sh"]` + `["mysqld"]` | `mysqld` |
+| 메시지큐 (rabbitmq) | `["docker-entrypoint.sh"]` + `["rabbitmq-server"]` | **`/bin/sh /opt/rabbitmq/sbin/rabbitmq-server`** |
+
+공식 이미지 대부분은 `docker-entrypoint.sh`라는 시작 스크립트를 거치는데도 PID 1이 앱 자신이다. 이 스크립트들이 준비 작업을 마친 뒤 마지막에 `exec "$@"`로 앱에게 자리를 넘겨주기 때문이다. 위 실험의 scriptexec와 같은 방식이다.
+
+눈에 띄는 건 rabbitmq다. PID 1이 셸 스크립트다. 실험대로라면 `docker stop` 때 10초를 버티다 강제 종료돼야 한다. 그런데 스크립트를 열어 보니 이렇게 되어 있었다.
+
+```sh
+$ docker exec rabbitmq grep -nE "trap|wait " /opt/rabbitmq/sbin/rabbitmq-server
+128:    trap "stop_rabbitmq_server; exit 0" TERM
+129:    trap "stop_rabbitmq_server; exit 130" INT
+139:    wait "$rabbitmq_server_pid"
+```
+
+셸이 `trap`으로 SIGTERM을 직접 받아서, 자식인 Erlang VM(`beam.smp`, PID 20)을 정리하는 함수를 부르고 끝난다. 셸이 PID 1이라도 **신호를 받아 자식에게 처리를 넘기고, 그동안 `wait`로 기다리게** 짜여 있으면 문제가 없다. 실험의 start.sh가 실패한 건 셸이 PID 1이어서가 아니라, 신호를 받을 준비가 없는 셸이었기 때문이다.
+
+이미 멈춘 컨테이너의 종료 코드로도 확인할 수 있다. 11월에 `docker stop`으로 멈춘 스프링 앱 두 개는 둘 다 **143**(128 + 15, SIGTERM으로 종료)이었다. 137(강제 종료)이 아니라는 건 앱이 신호를 제대로 받고 스스로 내려갔다는 뜻이다. nginx 웹 컨테이너는 0으로 끝났다.
+
+## 정리
 
 - CMD와 ENTRYPOINT는 exec form(`["python", "app.py"]`)으로 쓴다.
 - 시작 스크립트가 필요하면 마지막 줄을 `exec 앱`으로 끝낸다. 가장 확실한 방법이다(scriptexec).
 - `docker stop`이 10초 걸리거나 종료 코드가 137이면 신호 전달 문제를 의심하자. `docker exec <컨테이너> cat /proc/1/cmdline`으로 PID 1이 누군지 보면 바로 보인다.
 - `--init`은 좀비 프로세스 정리에는 좋지만 래퍼 스크립트의 신호 문제까지 자동으로 풀어주지는 않는다.
 
-참고: [Why Your Dockerized Application Isn't Receiving Signals](https://hynek.me/articles/docker-signals/)
+- 셸 스크립트가 PID 1이어야 한다면 rabbitmq처럼 `trap`으로 신호를 받고 `wait`로 자식을 기다리게 짠다.
 
-끝
+참고: [Why Your Dockerized Application Isn't Receiving Signals](https://hynek.me/articles/docker-signals/)
